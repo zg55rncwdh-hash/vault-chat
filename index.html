@@ -10,194 +10,154 @@
 <link rel="manifest" href="manifest.json">
 <title>VAULT CHAT</title>
 <style>
-:root {
-  --bg: #0a0a0f;
-  --surface: #12121a;
-  --surface2: #1a1a26;
-  --border: #2a2a3a;
-  --accent: #00e5ff;
-  --accent2: #7c4dff;
-  --green: #00e676;
-  --red: #ff1744;
-  --yellow: #ffd740;
-  --text: #e8e8f0;
-  --muted: #6b6b8a;
-  --font: 'Courier New', monospace;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background: var(--bg); color: var(--text); font-family: var(--font); height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
-.screen { display: none; flex-direction: column; height: 100dvh; }
-.screen.active { display: flex; }
-
-/* WELCOME */
-#welcomeScreen { align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(ellipse at 50% 0%, #1a0a3a 0%, var(--bg) 70%); }
-.logo-wrap { text-align: center; margin-bottom: 3rem; animation: fadeDown 0.6s ease; }
-.logo-icon { font-size: 4rem; display: block; margin-bottom: 1rem; filter: drop-shadow(0 0 20px var(--accent)); }
-.logo-title { font-size: 2rem; letter-spacing: 0.4em; color: var(--accent); text-shadow: 0 0 30px var(--accent); font-weight: bold; }
-.logo-sub { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.2em; margin-top: 0.5rem; }
-.welcome-btns { display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 320px; }
-
-/* BUTTONS */
-.btn-primary { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; border: none; padding: 1.1rem; border-radius: 12px; font-family: var(--font); font-size: 0.9rem; letter-spacing: 0.15em; cursor: pointer; font-weight: bold; transition: opacity 0.2s, transform 0.1s; }
-.btn-primary:active { opacity: 0.8; transform: scale(0.98); }
-.btn-secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 1.1rem; border-radius: 12px; font-family: var(--font); font-size: 0.9rem; letter-spacing: 0.15em; cursor: pointer; transition: background 0.2s, transform 0.1s; }
-.btn-secondary:active { background: rgba(0,229,255,0.1); transform: scale(0.98); }
-.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; font-family: var(--font); font-size: 0.85rem; letter-spacing: 0.1em; cursor: pointer; transition: color 0.2s, transform 0.1s; }
-.btn-ghost:active { color: var(--text); transform: scale(0.98); }
-
-/* AUTH */
-#authScreen { padding: 2rem; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 0%, #1a0a3a 0%, var(--bg) 70%); }
-.auth-box { width: 100%; max-width: 340px; animation: fadeUp 0.4s ease; }
-.auth-title { font-size: 1.2rem; letter-spacing: 0.3em; color: var(--accent); text-align: center; margin-bottom: 2rem; }
-.auth-tabs { display: flex; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.auth-tab { flex: 1; padding: 0.8rem; background: transparent; color: var(--muted); border: none; font-family: var(--font); font-size: 0.8rem; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; }
-.auth-tab.active { background: var(--accent2); color: #fff; }
-.form-group { margin-bottom: 1rem; }
-.form-label { display: block; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.15em; margin-bottom: 0.4rem; }
-.form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.9rem 1rem; border-radius: 10px; font-family: var(--font); font-size: 1rem; outline: none; transition: border-color 0.2s; }
-.form-input:focus { border-color: var(--accent); }
-.auth-back { text-align: center; margin-top: 1rem; color: var(--muted); font-size: 0.75rem; cursor: pointer; letter-spacing: 0.1em; }
-
-/* CONTACTS */
-#contactsScreen { background: var(--bg); }
-.top-bar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; padding-top: calc(1rem + env(safe-area-inset-top)); background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.top-bar-title { font-size: 0.85rem; letter-spacing: 0.25em; color: var(--accent); }
-.top-bar-actions { display: flex; gap: 0.8rem; }
-.icon-btn { background: transparent; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; padding: 0.3rem; transition: color 0.2s; }
-.contacts-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
-.contact-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.2rem; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
-.contact-item:active { background: var(--surface); }
-.contact-avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: #fff; flex-shrink: 0; }
-.contact-info { flex: 1; min-width: 0; }
-.contact-name { font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.contact-status { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-.bottom-bar { display: flex; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
-.bottom-tab { flex: 1; padding: 0.9rem 0.5rem; background: transparent; border: none; color: var(--muted); font-family: var(--font); font-size: 0.6rem; letter-spacing: 0.08em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; transition: color 0.2s; }
-.bottom-tab .tab-icon { font-size: 1.3rem; }
-.bottom-tab.active { color: var(--accent); }
-
-/* GUEST */
-#guestScreen { align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(ellipse at 50% 100%, #0a1a0a 0%, var(--bg) 70%); }
-.guest-box { width: 100%; max-width: 340px; animation: fadeUp 0.4s ease; text-align: center; }
-.guest-title { font-size: 1rem; letter-spacing: 0.25em; color: var(--accent); margin-bottom: 2rem; }
-.link-display { background: var(--surface2); border: 1px solid var(--accent); border-radius: 12px; padding: 1rem; margin: 1.5rem 0; font-size: 0.65rem; color: var(--accent); word-break: break-all; line-height: 1.6; letter-spacing: 0.05em; display: none; }
-.status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.7rem; letter-spacing: 0.1em; margin: 1rem 0; }
-.status-badge.waiting { background: rgba(255,215,64,0.1); border: 1px solid var(--yellow); color: var(--yellow); }
-.status-badge.connected { background: rgba(0,230,118,0.1); border: 1px solid var(--green); color: var(--green); }
-
-/* CHAT */
-#chatScreen { background: var(--bg); }
-.chat-header { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1rem; padding-top: calc(0.8rem + env(safe-area-inset-top)); background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.chat-back { background: transparent; border: none; color: var(--accent); font-size: 1.4rem; cursor: pointer; padding: 0.2rem; }
-.chat-peer-info { flex: 1; min-width: 0; }
-.chat-peer-name { font-size: 0.9rem; font-weight: bold; letter-spacing: 0.1em; }
-.chat-peer-status { font-size: 0.65rem; color: var(--green); letter-spacing: 0.08em; }
-.chat-actions { display: flex; gap: 0.5rem; }
-.call-btn { background: transparent; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem; transition: transform 0.1s; }
-.call-btn:active { transform: scale(0.9); }
-.fp-bar { padding: 0.4rem 1rem; background: rgba(0,229,255,0.05); border-bottom: 1px solid var(--border); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; text-align: center; flex-shrink: 0; }
-.messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; -webkit-overflow-scrolling: touch; }
-.msg { display: flex; flex-direction: column; max-width: 78%; }
-.msg.me { align-self: flex-end; align-items: flex-end; }
-.msg.them { align-self: flex-start; align-items: flex-start; }
-.msg.sys { align-self: center; max-width: 90%; }
-.msg-bubble { padding: 0.7rem 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; word-break: break-word; position: relative; overflow: hidden; }
-.msg.me .msg-bubble { background: linear-gradient(135deg, var(--accent2), #5c35cc); color: #fff; border-bottom-right-radius: 4px; }
-.msg.them .msg-bubble { background: var(--surface2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-.msg.sys .msg-bubble { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.7rem; text-align: center; letter-spacing: 0.08em; padding: 0.4rem 0.8rem; border-radius: 8px; }
-.msg-meta { font-size: 0.6rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
-.img-preview { max-width: 100%; border-radius: 10px; cursor: pointer; display: block; }
-.file-msg { display: flex; align-items: center; gap: 0.8rem; }
-.file-icon { font-size: 2rem; }
-.file-info { flex: 1; }
-.file-name { font-size: 0.8rem; font-weight: bold; }
-.file-size { font-size: 0.65rem; color: var(--muted); }
-.file-dl { font-size: 0.7rem; color: var(--accent); text-decoration: none; }
-.voice-msg { display: flex; align-items: center; gap: 0.8rem; min-width: 160px; }
-.voice-play { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); border: none; color: #000; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.voice-wave { flex: 1; height: 24px; background: repeating-linear-gradient(90deg, var(--muted) 0px, var(--muted) 2px, transparent 2px, transparent 4px); border-radius: 3px; opacity: 0.4; }
-.voice-dur { font-size: 0.7rem; color: var(--muted); }
-.typing-indicator { font-size: 0.7rem; color: var(--muted); padding: 0 1rem; height: 1.2rem; flex-shrink: 0; font-style: italic; }
-.file-preview-bar { display: none; align-items: center; gap: 0.8rem; padding: 0.6rem 1rem; background: var(--surface2); border-top: 1px solid var(--border); flex-shrink: 0; }
-.fp-name { flex: 1; font-size: 0.75rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fp-cancel { background: transparent; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; }
-.input-bar { display: flex; align-items: flex-end; gap: 0.6rem; padding: 0.8rem; padding-bottom: calc(0.8rem + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
-.input-actions { display: flex; gap: 0.3rem; }
-.attach-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.2s, border-color 0.2s; }
-.attach-btn:active { color: var(--accent); border-color: var(--accent); }
-.msg-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.7rem 1rem; border-radius: 20px; font-family: var(--font); font-size: 0.95rem; outline: none; resize: none; max-height: 120px; line-height: 1.4; transition: border-color 0.2s; }
-.msg-input:focus { border-color: var(--accent); }
-.send-btn { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); border: none; color: #fff; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.2s, transform 0.1s; }
-.send-btn:active { opacity: 0.8; transform: scale(0.9); }
-.record-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
-.record-btn.recording { background: var(--red); border-color: var(--red); color: #fff; animation: pulse 1s infinite; }
-
-/* CALL */
-#callScreen { align-items: center; justify-content: space-between; padding: 3rem 2rem; padding-top: calc(3rem + env(safe-area-inset-top)); padding-bottom: calc(3rem + env(safe-area-inset-bottom)); background: radial-gradient(ellipse at 50% 30%, #1a0a3a 0%, #050510 100%); position: relative; }
-.call-peer-name { font-size: 1.8rem; letter-spacing: 0.1em; color: var(--text); text-align: center; }
-.call-status { font-size: 0.8rem; color: var(--muted); text-align: center; letter-spacing: 0.15em; margin-top: 0.5rem; }
-.call-timer { font-size: 1.2rem; color: var(--accent); text-align: center; letter-spacing: 0.2em; font-weight: bold; }
-.call-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #fff; margin: 0 auto; box-shadow: 0 0 60px rgba(0,229,255,0.3); animation: callPulse 2s infinite; }
-.call-controls { display: flex; gap: 1.5rem; justify-content: center; align-items: center; }
-.call-ctrl-btn { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
-.call-ctrl-btn:active { transform: scale(0.9); }
-.call-ctrl-btn.mute { background: var(--surface2); color: var(--text); }
-.call-ctrl-btn.mute.active { background: var(--yellow); color: #000; }
-.call-ctrl-btn.speaker { background: var(--surface2); color: var(--text); }
-.call-ctrl-btn.hangup { background: var(--red); color: #fff; width: 70px; height: 70px; font-size: 1.8rem; }
-#remoteVideo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; display: none; }
-#localVideo { position: absolute; bottom: 120px; right: 1rem; width: 100px; height: 140px; object-fit: cover; border-radius: 12px; border: 2px solid var(--accent); z-index: 1; display: none; }
-
-/* INCOMING CALL */
-#incomingCall { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 2rem; }
-#incomingCall.show { display: flex; }
-.incoming-name { font-size: 1.5rem; letter-spacing: 0.1em; color: var(--text); text-align: center; }
-.incoming-sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.15em; }
-.incoming-btns { display: flex; gap: 3rem; }
-.ans-btn { width: 70px; height: 70px; border-radius: 50%; border: none; font-size: 2rem; cursor: pointer; transition: transform 0.1s; }
-.ans-btn:active { transform: scale(0.9); }
-.ans-btn.accept { background: var(--green); color: #fff; }
-.ans-btn.decline { background: var(--red); color: #fff; }
-
-/* SETTINGS */
-#settingsScreen { background: var(--bg); }
-.settings-list { padding: 1rem; }
-.settings-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; }
-.settings-label { font-size: 0.85rem; letter-spacing: 0.1em; }
-.settings-value { font-size: 0.75rem; color: var(--muted); }
-
-/* MODAL */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 50; align-items: flex-end; justify-content: center; }
-.modal-overlay.show { display: flex; }
-.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 1.5rem; width: 100%; max-width: 480px; animation: slideUp 0.3s ease; }
-.modal-title { font-size: 0.9rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 1.2rem; text-align: center; }
-.modal-close { float: right; background: transparent; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; margin-top: -0.5rem; }
-
-/* TOAST */
-#toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 1.2rem; border-radius: 20px; font-size: 0.75rem; letter-spacing: 0.08em; opacity: 0; transition: all 0.3s; z-index: 200; white-space: nowrap; pointer-events: none; }
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#toast.err { border-color: var(--red); color: var(--red); }
-#toast.ok { border-color: var(--green); color: var(--green); }
-
-/* ANIMATIONS */
-@keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.4); } 50% { box-shadow: 0 0 0 10px rgba(255,23,68,0); } }
-@keyframes callPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.3), 0 0 60px rgba(0,229,255,0.3); } 50% { box-shadow: 0 0 0 20px rgba(0,229,255,0), 0 0 60px rgba(0,229,255,0.3); } }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+:root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#2a2a3a;--accent:#00e5ff;--accent2:#7c4dff;--green:#00e676;--red:#ff1744;--yellow:#ffd740;--text:#e8e8f0;--muted:#6b6b8a;--font:'Courier New',monospace}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;height:100dvh}
+.screen.active{display:flex}
+#welcomeScreen{align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at 50% 0%,#1a0a3a 0%,var(--bg) 70%)}
+.logo-wrap{text-align:center;margin-bottom:3rem;animation:fadeDown .6s ease}
+.logo-icon{font-size:4rem;display:block;margin-bottom:1rem;filter:drop-shadow(0 0 20px var(--accent))}
+.logo-title{font-size:2rem;letter-spacing:.4em;color:var(--accent);text-shadow:0 0 30px var(--accent);font-weight:bold}
+.logo-sub{font-size:.65rem;color:var(--muted);letter-spacing:.2em;margin-top:.5rem}
+.welcome-btns{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:320px}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:1.1rem;border-radius:12px;font-family:var(--font);font-size:.9rem;letter-spacing:.15em;cursor:pointer;font-weight:bold;transition:opacity .2s,transform .1s;width:100%}
+.btn-primary:active{opacity:.8;transform:scale(.98)}
+.btn-secondary{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:1.1rem;border-radius:12px;font-family:var(--font);font-size:.9rem;letter-spacing:.15em;cursor:pointer;transition:background .2s,transform .1s;width:100%}
+.btn-secondary:active{background:rgba(0,229,255,.1);transform:scale(.98)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:1rem;border-radius:12px;font-family:var(--font);font-size:.85rem;letter-spacing:.1em;cursor:pointer;transition:color .2s,transform .1s;width:100%}
+.btn-ghost:active{color:var(--text);transform:scale(.98)}
+#authScreen{padding:2rem;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#1a0a3a 0%,var(--bg) 70%)}
+.auth-box{width:100%;max-width:340px;animation:fadeUp .4s ease}
+.auth-title{font-size:1.2rem;letter-spacing:.3em;color:var(--accent);text-align:center;margin-bottom:2rem}
+.auth-tabs{display:flex;margin-bottom:1.5rem;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.auth-tab{flex:1;padding:.8rem;background:transparent;color:var(--muted);border:none;font-family:var(--font);font-size:.8rem;letter-spacing:.1em;cursor:pointer;transition:all .2s}
+.auth-tab.active{background:var(--accent2);color:#fff}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.7rem;color:var(--muted);letter-spacing:.15em;margin-bottom:.4rem}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.9rem 1rem;border-radius:10px;font-family:var(--font);font-size:1rem;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--accent)}
+.auth-back{text-align:center;margin-top:1rem;color:var(--muted);font-size:.75rem;cursor:pointer;letter-spacing:.1em}
+#contactsScreen{background:var(--bg)}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;padding-top:calc(1rem + env(safe-area-inset-top));background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.top-bar-title{font-size:.85rem;letter-spacing:.25em;color:var(--accent)}
+.top-bar-actions{display:flex;gap:.8rem}
+.icon-btn{background:transparent;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:.3rem;transition:color .2s}
+.contacts-list{flex:1;overflow-y:auto;padding:.5rem 0}
+.contact-item{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s}
+.contact-item:active{background:var(--surface)}
+.contact-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;color:#fff;flex-shrink:0}
+.contact-info{flex:1;min-width:0}
+.contact-name{font-size:.95rem;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact-status{font-size:.7rem;color:var(--muted);margin-top:2px}
+.bottom-bar{display:flex;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);flex-shrink:0}
+.bottom-tab{flex:1;padding:.9rem .5rem;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:.6rem;letter-spacing:.08em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.3rem;transition:color .2s}
+.bottom-tab .tab-icon{font-size:1.3rem}
+.bottom-tab.active{color:var(--accent)}
+#guestScreen{align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at 50% 100%,#0a1a0a 0%,var(--bg) 70%)}
+.guest-box{width:100%;max-width:340px;animation:fadeUp .4s ease;text-align:center}
+.guest-title{font-size:1rem;letter-spacing:.25em;color:var(--accent);margin-bottom:2rem}
+.link-display{background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:1rem;margin:1.5rem 0;font-size:.65rem;color:var(--accent);word-break:break-all;line-height:1.6;letter-spacing:.05em;display:none}
+.status-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:20px;font-size:.7rem;letter-spacing:.1em;margin:1rem 0}
+.status-badge.waiting{background:rgba(255,215,64,.1);border:1px solid var(--yellow);color:var(--yellow)}
+.status-badge.connected{background:rgba(0,230,118,.1);border:1px solid var(--green);color:var(--green)}
+#chatScreen{background:var(--bg)}
+.chat-header{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;padding-top:calc(.8rem + env(safe-area-inset-top));background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-back{background:transparent;border:none;color:var(--accent);font-size:1.4rem;cursor:pointer;padding:.2rem}
+.chat-peer-info{flex:1;min-width:0}
+.chat-peer-name{font-size:.9rem;font-weight:bold;letter-spacing:.1em}
+.chat-peer-status{font-size:.65rem;color:var(--green);letter-spacing:.08em}
+.chat-actions{display:flex;gap:.5rem}
+.call-btn{background:transparent;border:none;font-size:1.3rem;cursor:pointer;padding:.3rem;transition:transform .1s}
+.call-btn:active{transform:scale(.9)}
+.fp-bar{padding:.4rem 1rem;background:rgba(0,229,255,.05);border-bottom:1px solid var(--border);font-size:.6rem;color:var(--muted);letter-spacing:.08em;text-align:center;flex-shrink:0}
+.messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.6rem;-webkit-overflow-scrolling:touch}
+.msg{display:flex;flex-direction:column;max-width:78%}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg.them{align-self:flex-start;align-items:flex-start}
+.msg.sys{align-self:center;max-width:90%}
+.msg-bubble{padding:.7rem 1rem;border-radius:16px;font-size:.9rem;line-height:1.5;word-break:break-word;position:relative;overflow:hidden}
+.msg.me .msg-bubble{background:linear-gradient(135deg,var(--accent2),#5c35cc);color:#fff;border-bottom-right-radius:4px}
+.msg.them .msg-bubble{background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.sys .msg-bubble{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.7rem;text-align:center;letter-spacing:.08em;padding:.4rem .8rem;border-radius:8px}
+.msg-meta{font-size:.6rem;color:var(--muted);margin-top:3px;letter-spacing:.05em}
+.img-preview{max-width:100%;border-radius:10px;cursor:pointer;display:block}
+.file-msg{display:flex;align-items:center;gap:.8rem}
+.file-icon{font-size:2rem}
+.file-info{flex:1}
+.file-name{font-size:.8rem;font-weight:bold}
+.file-size{font-size:.65rem;color:var(--muted)}
+.file-dl{font-size:.7rem;color:var(--accent);text-decoration:none}
+.voice-msg{display:flex;align-items:center;gap:.8rem;min-width:160px}
+.voice-play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.voice-wave{flex:1;height:24px;background:repeating-linear-gradient(90deg,var(--muted) 0px,var(--muted) 2px,transparent 2px,transparent 4px);border-radius:3px;opacity:.4}
+.typing-indicator{font-size:.7rem;color:var(--muted);padding:0 1rem;height:1.2rem;flex-shrink:0;font-style:italic}
+.file-preview-bar{display:none;align-items:center;gap:.8rem;padding:.6rem 1rem;background:var(--surface2);border-top:1px solid var(--border);flex-shrink:0}
+.fp-name{flex:1;font-size:.75rem;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-cancel{background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.input-bar{display:flex;align-items:flex-end;gap:.6rem;padding:.8rem;padding-bottom:calc(.8rem + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);flex-shrink:0}
+.input-actions{display:flex;gap:.3rem}
+.attach-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .2s,border-color .2s}
+.attach-btn:active{color:var(--accent);border-color:var(--accent)}
+.msg-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.7rem 1rem;border-radius:20px;font-family:var(--font);font-size:.95rem;outline:none;resize:none;max-height:120px;line-height:1.4;transition:border-color .2s}
+.msg-input:focus{border-color:var(--accent)}
+.send-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s,transform .1s}
+.send-btn:active{opacity:.8;transform:scale(.9)}
+.record-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.record-btn.recording{background:var(--red);border-color:var(--red);color:#fff;animation:pulse 1s infinite}
+#callScreen{align-items:center;justify-content:space-between;padding:3rem 2rem;padding-top:calc(3rem + env(safe-area-inset-top));padding-bottom:calc(3rem + env(safe-area-inset-bottom));background:radial-gradient(ellipse at 50% 30%,#1a0a3a 0%,#050510 100%);position:relative}
+.call-peer-name{font-size:1.8rem;letter-spacing:.1em;color:var(--text);text-align:center}
+.call-status{font-size:.8rem;color:var(--muted);text-align:center;letter-spacing:.15em;margin-top:.5rem}
+.call-timer{font-size:1.2rem;color:var(--accent);text-align:center;letter-spacing:.2em;font-weight:bold}
+.call-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:3rem;color:#fff;margin:0 auto;box-shadow:0 0 60px rgba(0,229,255,.3);animation:callPulse 2s infinite}
+.call-controls{display:flex;gap:1.5rem;justify-content:center;align-items:center}
+.call-ctrl-btn{width:60px;height:60px;border-radius:50%;border:none;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.call-ctrl-btn:active{transform:scale(.9)}
+.call-ctrl-btn.mute{background:var(--surface2);color:var(--text)}
+.call-ctrl-btn.mute.active{background:var(--yellow);color:#000}
+.call-ctrl-btn.hangup{background:var(--red);color:#fff;width:70px;height:70px;font-size:1.8rem}
+#remoteVideo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none}
+#localVideo{position:absolute;bottom:120px;right:1rem;width:100px;height:140px;object-fit:cover;border-radius:12px;border:2px solid var(--accent);z-index:1;display:none}
+#incomingCall{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:2rem}
+#incomingCall.show{display:flex}
+.incoming-name{font-size:1.5rem;letter-spacing:.1em;color:var(--text);text-align:center}
+.incoming-sub{font-size:.8rem;color:var(--muted);letter-spacing:.15em}
+.incoming-btns{display:flex;gap:3rem}
+.ans-btn{width:70px;height:70px;border-radius:50%;border:none;font-size:2rem;cursor:pointer;transition:transform .1s}
+.ans-btn:active{transform:scale(.9)}
+.ans-btn.accept{background:var(--green);color:#fff}
+.ans-btn.decline{background:var(--red);color:#fff}
+#settingsScreen{background:var(--bg)}
+.settings-list{padding:1rem}
+.settings-item{display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:.8rem}
+.settings-label{font-size:.85rem;letter-spacing:.1em}
+.settings-value{font-size:.75rem;color:var(--muted)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:50;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:480px;animation:slideUp .3s ease}
+.modal-title{font-size:.9rem;letter-spacing:.2em;color:var(--accent);margin-bottom:1.2rem;text-align:center}
+.modal-close{float:right;background:transparent;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;margin-top:-.5rem}
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.6rem 1.2rem;border-radius:20px;font-size:.75rem;letter-spacing:.08em;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--red);color:var(--red)}
+#toast.ok{border-color:var(--green);color:var(--green)}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,23,68,.4)}50%{box-shadow:0 0 0 10px rgba(255,23,68,0)}}
+@keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,.3),0 0 60px rgba(0,229,255,.3)}50%{box-shadow:0 0 0 20px rgba(0,229,255,0),0 0 60px rgba(0,229,255,.3)}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
 
-<!-- WELCOME -->
 <div id="welcomeScreen" class="screen active">
   <div class="logo-wrap">
     <span class="logo-icon">🔒</span>
     <div class="logo-title">VAULT CHAT</div>
-    <div class="logo-sub">ENDE-ZU-ENDE VERSCHLÜSSELT · QUANTENSICHER · P2P</div>
+    <div class="logo-sub">ENDE-ZU-ENDE VERSCHLÜSSELT · QUANTENSICHER</div>
   </div>
   <div class="welcome-btns">
     <button class="btn-primary" onclick="showAuth()">🔑 EINLOGGEN / REGISTRIEREN</button>
@@ -206,7 +166,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
   </div>
 </div>
 
-<!-- AUTH -->
 <div id="authScreen" class="screen">
   <div class="auth-box">
     <div class="auth-title">🔒 VAULT CHAT</div>
@@ -216,11 +175,11 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
     </div>
     <div class="form-group">
       <label class="form-label">BENUTZERNAME</label>
-      <input class="form-input" id="authUser" type="text" placeholder="dein_name" autocomplete="username">
+      <input class="form-input" id="authUser" type="text" placeholder="dein_name">
     </div>
     <div class="form-group">
       <label class="form-label">PASSWORT</label>
-      <input class="form-input" id="authPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <input class="form-input" id="authPass" type="password" placeholder="••••••••">
     </div>
     <div class="form-group" id="authPassConfirmGroup" style="display:none">
       <label class="form-label">PASSWORT WIEDERHOLEN</label>
@@ -231,22 +190,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
   </div>
 </div>
 
-<!-- CONTACTS -->
 <div id="contactsScreen" class="screen">
   <div class="top-bar">
     <div class="top-bar-title">🔒 VAULT CHAT</div>
     <div class="top-bar-actions">
-      <button class="icon-btn" onclick="showAddContact()">➕</button>
       <button class="icon-btn" onclick="showNewLink()">🔗</button>
       <button class="icon-btn" onclick="showScreen('settingsScreen')">⚙️</button>
     </div>
   </div>
-  <div class="contacts-list" id="contactsList">
-    <div style="text-align:center;padding:3rem 2rem;color:var(--muted);font-size:0.8rem;letter-spacing:0.1em;">
-      NOCH KEINE KONTAKTE<br><br>
-      <span style="font-size:0.7rem;">Tippe ➕ um einen Kontakt hinzuzufügen<br>oder 🔗 um einen Chat-Link zu erstellen</span>
-    </div>
-  </div>
+  <div class="contacts-list" id="contactsList"></div>
   <div class="bottom-bar">
     <button class="bottom-tab active"><span class="tab-icon">👥</span>KONTAKTE</button>
     <button class="bottom-tab" onclick="showNewLink()"><span class="tab-icon">💬</span>NEUER CHAT</button>
@@ -254,30 +206,28 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
   </div>
 </div>
 
-<!-- GUEST -->
 <div id="guestScreen" class="screen">
   <div class="guest-box">
     <div class="guest-title">⚡ GAST-CHAT</div>
-    <p style="font-size:0.8rem;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:1.5rem;">Erstelle einen Link und schicke ihn deinem Gesprächspartner.</p>
+    <p style="font-size:.8rem;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:1.5rem">Erstelle einen Link und schicke ihn deinem Gesprächspartner.</p>
     <div id="guestLinkDisplay" class="link-display"></div>
-    <div id="guestStatus" style="display:none;text-align:center;">
+    <div id="guestStatus" style="display:none;text-align:center">
       <div class="status-badge waiting" id="guestWaiting">⏳ WARTE AUF PARTNER...</div>
-      <div class="status-badge connected" id="guestConnected" style="display:none;">✅ VERBUNDEN</div>
+      <div class="status-badge connected" id="guestConnected" style="display:none">✅ VERBUNDEN · VERSCHLÜSSELT</div>
     </div>
     <div id="guestBtns">
       <button class="btn-primary" onclick="createGuestLink()" id="createLinkBtn">🔗 CHAT-LINK ERSTELLEN</button>
     </div>
-    <div id="guestCopyBtns" style="display:none;margin-top:1rem;">
-      <button class="btn-secondary" onclick="copyLink()" style="width:100%;margin-bottom:0.8rem;">📋 LINK KOPIEREN</button>
-      <button class="btn-ghost" onclick="shareLink()" style="width:100%;">📤 TEILEN</button>
+    <div id="guestCopyBtns" style="display:none;margin-top:1rem">
+      <button class="btn-secondary" onclick="copyLink()" style="margin-bottom:.8rem">📋 LINK KOPIEREN</button>
+      <button class="btn-ghost" onclick="shareLink()">📤 TEILEN</button>
     </div>
-    <div style="margin-top:1.5rem;">
-      <button class="btn-ghost" style="width:100%;" onclick="showWelcome()">← ZURÜCK</button>
+    <div style="margin-top:1.5rem">
+      <button class="btn-ghost" onclick="showWelcome()">← ZURÜCK</button>
     </div>
   </div>
 </div>
 
-<!-- CHAT -->
 <div id="chatScreen" class="screen">
   <div class="chat-header">
     <button class="chat-back" onclick="leaveChat()">←</button>
@@ -290,14 +240,14 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
       <button class="call-btn" onclick="startCall(true)">📹</button>
     </div>
   </div>
-  <div class="fp-bar" id="fpBar">🔒 AES-256-GCM · P2P DIREKT</div>
+  <div class="fp-bar" id="fpBar">🔒 AES-256-GCM · ENDE-ZU-ENDE VERSCHLÜSSELT</div>
   <div class="messages" id="messages"></div>
   <div class="typing-indicator" id="typingIndicator"></div>
   <div class="file-preview-bar" id="filePreviewBar">
-    <span style="font-size:1.2rem;">📎</span>
+    <span style="font-size:1.2rem">📎</span>
     <span class="fp-name" id="fpFileName">—</span>
     <button class="fp-cancel" onclick="cancelFile()">✕</button>
-    <button class="send-btn" onclick="sendFile()" style="width:36px;height:36px;font-size:0.9rem;">▶</button>
+    <button class="send-btn" onclick="sendFile()" style="width:36px;height:36px;font-size:.9rem">▶</button>
   </div>
   <div class="input-bar">
     <div class="input-actions">
@@ -314,24 +264,22 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
   <input type="file" id="fileInput" style="display:none" onchange="onFileSelected(this)">
 </div>
 
-<!-- CALL -->
 <div id="callScreen" class="screen">
   <video id="remoteVideo" autoplay playsinline></video>
   <video id="localVideo" autoplay playsinline muted></video>
-  <div style="text-align:center;position:relative;z-index:2;">
+  <div style="text-align:center;position:relative;z-index:2">
     <div class="call-peer-name" id="callPeerName">—</div>
     <div class="call-status" id="callStatus">VERBINDE...</div>
   </div>
   <div class="call-avatar" id="callAvatar">👤</div>
-  <div class="call-timer" id="callTimer" style="display:none;">00:00</div>
+  <div class="call-timer" id="callTimer" style="display:none">00:00</div>
   <div class="call-controls">
     <button class="call-ctrl-btn mute" id="muteBtn" onclick="toggleMute()">🎤</button>
     <button class="call-ctrl-btn hangup" onclick="hangup()">📵</button>
-    <button class="call-ctrl-btn speaker" onclick="toggleSpeaker()">🔊</button>
+    <button class="call-ctrl-btn" onclick="toggleSpeaker()">🔊</button>
   </div>
 </div>
 
-<!-- SETTINGS -->
 <div id="settingsScreen" class="screen">
   <div class="top-bar">
     <button class="icon-btn" onclick="goBackFromSettings()">←</button>
@@ -341,7 +289,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
   <div class="settings-list">
     <div class="settings-item">
       <div><div class="settings-label">NACHRICHTEN LÖSCHEN</div><div class="settings-value" id="destroyLabel">Aus</div></div>
-      <select class="form-input" style="width:120px;padding:0.5rem;" onchange="setDestroyTime(this.value)">
+      <select class="form-input" style="width:120px;padding:.5rem" onchange="setDestroyTime(this.value)">
         <option value="0">Aus</option>
         <option value="10">10 Sek</option>
         <option value="30">30 Sek</option>
@@ -356,53 +304,34 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
     </div>
     <div class="settings-item">
       <div><div class="settings-label">AUSLOGGEN</div></div>
-      <button class="btn-ghost" style="padding:0.5rem 1rem;font-size:0.75rem;" onclick="logout()">LOGOUT</button>
+      <button class="btn-ghost" style="width:auto;padding:.5rem 1rem;font-size:.75rem" onclick="logout()">LOGOUT</button>
     </div>
-    <div class="settings-item" style="flex-direction:column;gap:0.5rem;align-items:flex-start;">
+    <div class="settings-item" style="flex-direction:column;gap:.5rem;align-items:flex-start">
       <div class="settings-label">VERSION</div>
-      <div class="settings-value">VAULT CHAT v2.0 · AES-256-GCM · WebRTC P2P</div>
+      <div class="settings-value">VAULT CHAT v2.0 · AES-256-GCM · E2E</div>
     </div>
   </div>
 </div>
 
-<!-- INCOMING CALL -->
 <div id="incomingCall">
   <div>
     <div class="incoming-name" id="incomingName">Anruf</div>
     <div class="incoming-sub">ANRUF · VERSCHLÜSSELT</div>
   </div>
-  <div style="animation:callPulse 1.5s infinite;width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2.5rem;">👤</div>
+  <div style="animation:callPulse 1.5s infinite;width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2.5rem">👤</div>
   <div class="incoming-btns">
     <button class="ans-btn decline" onclick="declineCall()">📵</button>
     <button class="ans-btn accept" onclick="acceptCall()">📞</button>
   </div>
 </div>
 
-<!-- ADD CONTACT MODAL -->
-<div class="modal-overlay" id="addContactModal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('addContactModal')">✕</button>
-    <div class="modal-title">➕ KONTAKT HINZUFÜGEN</div>
-    <div class="form-group">
-      <label class="form-label">PEER ID</label>
-      <input class="form-input" id="addContactId" placeholder="ID eingeben...">
-    </div>
-    <div class="form-group">
-      <label class="form-label">NAME</label>
-      <input class="form-input" id="addContactName" placeholder="Name...">
-    </div>
-    <button class="btn-primary" onclick="addContact()">HINZUFÜGEN</button>
-  </div>
-</div>
-
-<!-- NEW LINK MODAL -->
 <div class="modal-overlay" id="newLinkModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('newLinkModal')">✕</button>
     <div class="modal-title">🔗 CHAT-LINK</div>
-    <div class="link-display" id="modalLinkDisplay" style="display:block;margin:1rem 0;"></div>
-    <button class="btn-secondary" onclick="copyModalLink()" style="width:100%;margin-bottom:0.8rem;">📋 KOPIEREN</button>
-    <button class="btn-ghost" onclick="shareModalLink()" style="width:100%;">📤 TEILEN</button>
+    <div class="link-display" id="modalLinkDisplay" style="display:block;margin:1rem 0"></div>
+    <button class="btn-secondary" onclick="copyModalLink()" style="margin-bottom:.8rem">📋 KOPIEREN</button>
+    <button class="btn-ghost" onclick="shareModalLink()">📤 TEILEN</button>
   </div>
 </div>
 
@@ -411,23 +340,17 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); heig
 <script>
 'use strict';
 
-// ── CONFIG ─────────────────────────────────────────────────────
-const SIGNAL_SERVER = "wss://vault-chat.onrender.com";
+const SERVER = 'wss://vault-chat.onrender.com';
 
-// ── STATE ──────────────────────────────────────────────────────
 let ws = null;
-let myId = null;
-let partnerId = null;
+let roomId = null;
+let role = null;
 let myKeyPair = null;
 let sharedKey = null;
-let localStream = null;
-let peerConn = null;
-let dataChannel = null;
 let pendingFile = null;
 let isRecording = false;
 let mediaRecorder = null;
 let recordChunks = [];
-let typingTimer = null;
 let partnerTypingTimer = null;
 let callTimer = null;
 let callSeconds = 0;
@@ -438,414 +361,342 @@ let contacts = [];
 let guestLinkUrl = null;
 let modalLinkUrl = null;
 let isVideoCall = false;
-let pendingIceCandidates = [];
-let incomingCallOffer = null;
+let peerConn = null;
+let localStream = null;
+let pendingIce = [];
+let incomingOffer = null;
 
-// ── CRYPTO ─────────────────────────────────────────────────────
-async function generateKeyPair() {
-  return await crypto.subtle.generateKey(
-    { name: 'ECDH', namedCurve: 'P-384' }, true, ['deriveKey']
-  );
+// ── CRYPTO ────────────────────────────────────────────────────
+async function genKeyPair() {
+  return await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-384'},true,['deriveKey']);
 }
-
-async function deriveSharedKey(myPrivate, theirPublic) {
+async function deriveKey(myPriv, theirPub) {
   return await crypto.subtle.deriveKey(
-    { name: 'ECDH', public: theirPublic },
-    myPrivate,
-    { name: 'AES-GCM', length: 256 },
-    false, ['encrypt', 'decrypt']
+    {name:'ECDH',public:theirPub}, myPriv,
+    {name:'AES-GCM',length:256}, false, ['encrypt','decrypt']
   );
 }
-
-async function exportPublicKey(kp) {
+async function exportPub(kp) {
   const raw = await crypto.subtle.exportKey('raw', kp.publicKey);
   return btoa(String.fromCharCode(...new Uint8Array(raw)));
 }
-
-async function importPublicKey(b64) {
+async function importPub(b64) {
   const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  return await crypto.subtle.importKey('raw', raw, { name: 'ECDH', namedCurve: 'P-384' }, true, []);
+  return await crypto.subtle.importKey('raw', raw, {name:'ECDH',namedCurve:'P-384'}, true, []);
 }
-
-async function encrypt(data) {
+async function enc(data) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, sharedKey, bytes);
-  const result = new Uint8Array(12 + ct.byteLength);
-  result.set(iv);
-  result.set(new Uint8Array(ct), 12);
-  return btoa(String.fromCharCode(...result));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, sharedKey, bytes);
+  const out = new Uint8Array(12 + ct.byteLength);
+  out.set(iv); out.set(new Uint8Array(ct), 12);
+  return btoa(String.fromCharCode(...out));
 }
-
-async function decrypt(b64, asBytes = false) {
+async function dec(b64, asBytes) {
   const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  const plain = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: raw.slice(0, 12) }, sharedKey, raw.slice(12)
-  );
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(0,12)}, sharedKey, raw.slice(12));
   return asBytes ? new Uint8Array(plain) : new TextDecoder().decode(plain);
 }
-
-async function hashPassword(pass) {
-  const enc = new TextEncoder().encode(pass + 'vault2024');
-  const hash = await crypto.subtle.digest('SHA-256', enc);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
+async function hashPw(p) {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p+'vault2024'));
+  return btoa(String.fromCharCode(...new Uint8Array(h)));
 }
 
-// ── WEBSOCKET SIGNALING ────────────────────────────────────────
-function connectSignaling() {
+// ── WEBSOCKET ─────────────────────────────────────────────────
+function connect() {
   return new Promise((resolve, reject) => {
-    ws = new WebSocket(SIGNAL_SERVER);
+    ws = new WebSocket(SERVER);
     ws.onopen = () => resolve();
     ws.onerror = () => reject(new Error('Server nicht erreichbar'));
-    ws.onmessage = async e => {
-      const msg = JSON.parse(e.data);
-      await handleSignal(msg);
-    };
-    ws.onclose = () => {
-      console.log('WS closed');
-    };
+    ws.onmessage = e => handleMsg(JSON.parse(e.data));
   });
 }
 
-function wsSend(obj) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(obj));
-  }
+function send(obj) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
 }
 
-async function handleSignal(msg) {
-  if (msg.type === 'REGISTERED' || msg.type === 'ID') {
-    myId = msg.id;
-    console.log('My ID:', myId);
-  }
-
-  if (msg.type === 'SIGNAL') {
-    const data = msg.data;
-    partnerId = msg.from;
-
-    if (data.type === 'KEY') {
-      // Key exchange
-      const theirPub = await importPublicKey(data.pub);
-      sharedKey = await deriveSharedKey(myKeyPair.privateKey, theirPub);
-      document.getElementById('fpBar').textContent = '🔒 AES-256-GCM · VERSCHLÜSSELT · P2P';
-      document.getElementById('chatPeerName').textContent = partnerId.substring(0, 8).toUpperCase();
-      document.getElementById('chatPeerStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-      showScreen('chatScreen');
-      addSysMsg('🔒 Ende-zu-Ende Verschlüsselung aktiv');
-      // Update guest connected status
-      const gc = document.getElementById('guestConnected');
-      const gw = document.getElementById('guestWaiting');
-      if (gc) gc.style.display = 'inline-flex';
-      if (gw) gw.style.display = 'none';
-    }
-
-    if (data.type === 'MSG' && sharedKey) {
-      const text = await decrypt(data.ct);
-      const el = addMsg('them', text);
-      if (destroySeconds > 0) scheduleDestroy(el);
-    }
-
-    if (data.type === 'FILE' && sharedKey) {
-      const bytes = await decrypt(data.ct, true);
-      receiveFile(bytes, data.name, data.mime);
-    }
-
-    if (data.type === 'VOICE' && sharedKey) {
-      const bytes = await decrypt(data.ct, true);
-      addVoiceMsg('them', bytes);
-    }
-
-    if (data.type === 'TYPING') showPartnerTyping();
-
-    if (data.type === 'DESTROY_TIME') destroySeconds = data.val;
-
-    // WebRTC signaling
-    if (data.type === 'CALL_OFFER') {
-      incomingCallOffer = data;
-      isVideoCall = data.video;
-      document.getElementById('incomingName').textContent =
-        document.getElementById('chatPeerName').textContent;
-      document.getElementById('incomingCall').classList.add('show');
-    }
-
-    if (data.type === 'CALL_ANSWER' && peerConn) {
-      await peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp));
-      pendingIceCandidates.forEach(c => peerConn.addIceCandidate(c));
-      pendingIceCandidates = [];
-    }
-
-    if (data.type === 'ICE' && peerConn) {
-      const candidate = new RTCIceCandidate(data.candidate);
-      if (peerConn.remoteDescription) {
-        await peerConn.addIceCandidate(candidate);
-      } else {
-        pendingIceCandidates.push(candidate);
-      }
-    }
-
-    if (data.type === 'CALL_END') endCall();
-  }
+function relay(data) {
+  send({type:'RELAY', data});
 }
 
-function sendToPartner(obj) {
-  wsSend({ type: 'SIGNAL', target: partnerId, data: obj });
-}
-
-// ── INIT ───────────────────────────────────────────────────────
-async function initConnection(targetId = null) {
-  myKeyPair = await generateKeyPair();
-  const myPub = await exportPublicKey(myKeyPair);
-
-  try {
-    await connectSignaling();
-    // Register with server
-    const id = targetId ? null : undefined;
-    wsSend({ type: 'REGISTER', id: myId || undefined });
-
-    // Wait for our ID
-    await new Promise(resolve => {
-      const check = setInterval(() => {
-        if (myId) { clearInterval(check); resolve(); }
-      }, 100);
-      setTimeout(() => { clearInterval(check); resolve(); }, 3000);
-    });
-
-    if (targetId) {
-      // We are joining — send key to target after small delay
-      partnerId = targetId;
-      await new Promise(r => setTimeout(r, 500));
-      sendToPartner({ type: 'KEY', pub: myPub });
-    } else {
-      // We are hosting — wait for partner to send key, then respond
-      const origHandler = ws.onmessage;
-      ws.onmessage = async e => {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'SIGNAL' && msg.data.type === 'KEY') {
-          partnerId = msg.from;
-          const theirPub = await importPublicKey(msg.data.pub);
-          sharedKey = await deriveSharedKey(myKeyPair.privateKey, theirPub);
-          // Send our key back
-          sendToPartner({ type: 'KEY', pub: myPub });
-          document.getElementById('fpBar').textContent = '🔒 AES-256-GCM · VERSCHLÜSSELT · P2P';
-          document.getElementById('chatPeerName').textContent = partnerId.substring(0, 8).toUpperCase();
-          document.getElementById('chatPeerStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-          showScreen('chatScreen');
-          addSysMsg('🔒 Ende-zu-Ende Verschlüsselung aktiv');
-          const gc = document.getElementById('guestConnected');
-          const gw = document.getElementById('guestWaiting');
-          if (gc) gc.style.display = 'inline-flex';
-          if (gw) gw.style.display = 'none';
-          // Restore normal handler
-          ws.onmessage = async ev => handleSignal(JSON.parse(ev.data));
-        } else {
-          await handleSignal(msg);
-        }
-      };
-    }
-  } catch(e) {
-    throw new Error('Verbindungsfehler: ' + e.message);
-  }
-
-  return myId;
-}
-
-// ── SCREENS ────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function showWelcome() {
-  showScreen('welcomeScreen');
-  if (ws) { ws.close(); ws = null; }
-  sharedKey = null; partnerId = null; myId = null;
-}
-
-function showAuth() { showScreen('authScreen'); }
-function showGuest() { showScreen('guestScreen'); }
-
-function showJoinLink() {
-  const url = prompt('Chat-Link eingeben:');
-  if (url) joinFromLink(url);
-}
-
-// ── AUTH ───────────────────────────────────────────────────────
-let authMode = 'login';
-
-function switchAuthTab(mode) {
-  authMode = mode;
-  document.querySelectorAll('.auth-tab').forEach((t, i) => {
-    t.classList.toggle('active', (i===0&&mode==='login')||(i===1&&mode==='register'));
-  });
-  document.getElementById('authPassConfirmGroup').style.display = mode === 'register' ? 'block' : 'none';
-  document.getElementById('authBtn').textContent = mode === 'login' ? 'EINLOGGEN' : 'REGISTRIEREN';
-}
-
-async function doAuth() {
-  const user = document.getElementById('authUser').value.trim();
-  const pass = document.getElementById('authPass').value;
-  if (!user || !pass) { toast('Felder ausfüllen', 'err'); return; }
-  const hash = await hashPassword(pass);
-  if (authMode === 'register') {
-    const confirm = document.getElementById('authPassConfirm').value;
-    if (pass !== confirm) { toast('Passwörter stimmen nicht überein', 'err'); return; }
-    localStorage.setItem('vc_user', JSON.stringify({ username: user, passHash: hash }));
-    toast('Registriert! ✓', 'ok');
-  } else {
-    const stored = JSON.parse(localStorage.getItem('vc_user') || 'null');
-    if (!stored || stored.username !== user || stored.passHash !== hash) {
-      toast('Ungültige Anmeldedaten', 'err'); return;
-    }
-  }
-  currentUser = user;
-  contacts = JSON.parse(localStorage.getItem('vc_contacts') || '[]');
-  document.getElementById('settingsUsername').textContent = user;
-  renderContacts();
-  showScreen('contactsScreen');
-  toast('Hallo, ' + user + '! 👋', 'ok');
-}
-
-function logout() { currentUser = null; showWelcome(); }
-
-// ── CONTACTS ───────────────────────────────────────────────────
-function renderContacts() {
-  const list = document.getElementById('contactsList');
-  if (!contacts.length) {
-    list.innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--muted);font-size:0.8rem;letter-spacing:0.1em;">NOCH KEINE KONTAKTE<br><br><span style="font-size:0.7rem;">Tippe ➕ oder 🔗</span></div>';
-    return;
-  }
-  list.innerHTML = contacts.map((c, i) => `
-    <div class="contact-item" onclick="startChatWithContact(${i})">
-      <div class="contact-avatar">${(c.name||c.id)[0].toUpperCase()}</div>
-      <div class="contact-info">
-        <div class="contact-name">${c.name || c.id.substring(0,12)}</div>
-        <div class="contact-status">${c.id.substring(0,20)}...</div>
-      </div>
-    </div>`).join('');
-}
-
-function showAddContact() {
-  document.getElementById('addContactId').value = '';
-  document.getElementById('addContactName').value = '';
-  document.getElementById('addContactModal').classList.add('show');
-}
-
-function addContact() {
-  const id = document.getElementById('addContactId').value.trim();
-  const name = document.getElementById('addContactName').value.trim();
-  if (!id) { toast('ID eingeben', 'err'); return; }
-  contacts.push({ id, name: name || id.substring(0,8) });
-  localStorage.setItem('vc_contacts', JSON.stringify(contacts));
-  renderContacts();
-  closeModal('addContactModal');
-  toast('Kontakt hinzugefügt ✓', 'ok');
-}
-
-async function startChatWithContact(i) {
-  const contact = contacts[i];
-  document.getElementById('chatPeerName').textContent = contact.name || 'KONTAKT';
-  addSysMsg('⏳ Verbinde...');
-  showScreen('chatScreen');
-  try {
-    await initConnection(contact.id);
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-// ── GUEST CHAT ─────────────────────────────────────────────────
-async function createGuestLink() {
-  const btn = document.getElementById('createLinkBtn');
-  btn.textContent = '⏳ VERBINDE...';
-  btn.disabled = true;
-  try {
-    const id = await initConnection(null);
-    const url = `${location.origin}${location.pathname}#join=${id}`;
+async function handleMsg(msg) {
+  if (msg.type === 'CREATED') {
+    roomId = msg.roomId;
+    const url = location.origin + location.pathname + '#room=' + roomId;
     guestLinkUrl = url;
     document.getElementById('guestLinkDisplay').textContent = url;
     document.getElementById('guestLinkDisplay').style.display = 'block';
     document.getElementById('guestStatus').style.display = 'block';
     document.getElementById('guestBtns').style.display = 'none';
     document.getElementById('guestCopyBtns').style.display = 'block';
-    toast('Link erstellt! 🔗', 'ok');
+    document.getElementById('createLinkBtn').disabled = false;
+  }
+
+  if (msg.type === 'JOINED') {
+    // Guest joined our room — send our public key
+    const pub = await exportPub(myKeyPair);
+    relay({type:'KEY', pub});
+  }
+
+  if (msg.type === 'GUEST_JOINED') {
+    // Host gets notified guest joined — guest will send key first
+    toast('Partner verbunden! 🔒', 'ok');
+  }
+
+  if (msg.type === 'PARTNER_LEFT') {
+    sharedKey = null;
+    addSysMsg('⚠️ Partner hat den Chat verlassen');
+    document.getElementById('chatPeerStatus').textContent = '⚠️ GETRENNT';
+  }
+
+  if (msg.type === 'ERROR') {
+    toast('Fehler: ' + msg.msg, 'err');
+  }
+
+  if (msg.type === 'RELAY') {
+    await handleRelay(msg.data);
+  }
+}
+
+async function handleRelay(data) {
+  if (data.type === 'KEY') {
+    const theirPub = await importPub(data.pub);
+    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+
+    // If we are the guest, send our key back
+    if (role === 'guest') {
+      const pub = await exportPub(myKeyPair);
+      relay({type:'KEY_ACK', pub});
+    }
+
+    onConnected();
+  }
+
+  if (data.type === 'KEY_ACK') {
+    // Host receives guest key
+    const theirPub = await importPub(data.pub);
+    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+    onConnected();
+  }
+
+  if (!sharedKey) return;
+
+  if (data.type === 'MSG') {
+    const text = await dec(data.ct);
+    const el = addMsg('them', text);
+    if (destroySeconds > 0) scheduleDestroy(el);
+  }
+  if (data.type === 'FILE') {
+    const bytes = await dec(data.ct, true);
+    receiveFile(bytes, data.name, data.mime);
+  }
+  if (data.type === 'VOICE') {
+    const bytes = await dec(data.ct, true);
+    addVoiceMsg('them', bytes);
+  }
+  if (data.type === 'TYPING') showPartnerTyping();
+  if (data.type === 'DESTROY') destroySeconds = data.val;
+
+  // WebRTC
+  if (data.type === 'CALL_OFFER') {
+    incomingOffer = data;
+    isVideoCall = data.video;
+    document.getElementById('incomingName').textContent = document.getElementById('chatPeerName').textContent;
+    document.getElementById('incomingCall').classList.add('show');
+  }
+  if (data.type === 'CALL_ANSWER' && peerConn) {
+    await peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp));
+    pendingIce.forEach(c => peerConn.addIceCandidate(c));
+    pendingIce = [];
+  }
+  if (data.type === 'ICE' && peerConn) {
+    const c = new RTCIceCandidate(data.candidate);
+    if (peerConn.remoteDescription) peerConn.addIceCandidate(c);
+    else pendingIce.push(c);
+  }
+  if (data.type === 'CALL_END') endCall();
+}
+
+function onConnected() {
+  document.getElementById('fpBar').textContent = '🔒 AES-256-GCM · ENDE-ZU-ENDE VERSCHLÜSSELT';
+  document.getElementById('chatPeerStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+  showScreen('chatScreen');
+  addSysMsg('🔒 Ende-zu-Ende Verschlüsselung aktiv!');
+  document.getElementById('guestConnected').style.display = 'inline-flex';
+  document.getElementById('guestWaiting').style.display = 'none';
+}
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showWelcome() {
+  showScreen('welcomeScreen');
+  if (ws) { ws.close(); ws = null; }
+  sharedKey = null; roomId = null;
+}
+function showAuth() { showScreen('authScreen'); }
+function showGuest() { showScreen('guestScreen'); }
+function showJoinLink() {
+  const url = prompt('Chat-Link eingeben:');
+  if (url) joinFromLink(url);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+let authMode = 'login';
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active',(i===0&&mode==='login')||(i===1&&mode==='register'));
+  });
+  document.getElementById('authPassConfirmGroup').style.display = mode==='register'?'block':'none';
+  document.getElementById('authBtn').textContent = mode==='login'?'EINLOGGEN':'REGISTRIEREN';
+}
+async function doAuth() {
+  const user = document.getElementById('authUser').value.trim();
+  const pass = document.getElementById('authPass').value;
+  if (!user||!pass) { toast('Felder ausfüllen','err'); return; }
+  const hash = await hashPw(pass);
+  if (authMode === 'register') {
+    const c = document.getElementById('authPassConfirm').value;
+    if (pass!==c) { toast('Passwörter stimmen nicht','err'); return; }
+    localStorage.setItem('vc_user', JSON.stringify({username:user,passHash:hash}));
+    toast('Registriert! ✓','ok');
+  } else {
+    const s = JSON.parse(localStorage.getItem('vc_user')||'null');
+    if (!s||s.username!==user||s.passHash!==hash) { toast('Ungültige Daten','err'); return; }
+  }
+  currentUser = user;
+  contacts = JSON.parse(localStorage.getItem('vc_contacts')||'[]');
+  document.getElementById('settingsUsername').textContent = user;
+  renderContacts();
+  showScreen('contactsScreen');
+  toast('Hallo, '+user+'! 👋','ok');
+}
+function logout() { currentUser=null; showWelcome(); }
+
+// ── CONTACTS ──────────────────────────────────────────────────
+function renderContacts() {
+  const list = document.getElementById('contactsList');
+  if (!contacts.length) {
+    list.innerHTML = '<div style="text-align:center;padding:3rem 2rem;color:var(--muted);font-size:.8rem;letter-spacing:.1em">NOCH KEINE KONTAKTE<br><br><span style="font-size:.7rem">Tippe 🔗 um Chat-Link zu erstellen</span></div>';
+    return;
+  }
+  list.innerHTML = contacts.map((c,i) => `
+    <div class="contact-item" onclick="startChatWithContact(${i})">
+      <div class="contact-avatar">${(c.name||c.id)[0].toUpperCase()}</div>
+      <div class="contact-info">
+        <div class="contact-name">${c.name||c.id.substring(0,12)}</div>
+        <div class="contact-status">${c.id}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── GUEST CHAT ────────────────────────────────────────────────
+async function createGuestLink() {
+  const btn = document.getElementById('createLinkBtn');
+  btn.textContent = '⏳ VERBINDE...';
+  btn.disabled = true;
+  try {
+    myKeyPair = await genKeyPair();
+    role = 'host';
+    await connect();
+    send({type:'CREATE'});
+    toast('Link erstellt! 🔗','ok');
+    btn.textContent = '🔗 CHAT-LINK ERSTELLEN';
   } catch(e) {
-    toast('Fehler: ' + e.message, 'err');
+    toast('Fehler: '+e.message,'err');
     btn.textContent = '🔗 CHAT-LINK ERSTELLEN';
     btn.disabled = false;
   }
 }
 
 function copyLink() {
-  navigator.clipboard.writeText(guestLinkUrl).then(() => toast('Kopiert! 📋', 'ok'));
+  navigator.clipboard.writeText(guestLinkUrl).then(() => toast('Kopiert! 📋','ok'));
 }
-
 function shareLink() {
-  if (navigator.share) navigator.share({ title: 'Vault Chat', url: guestLinkUrl });
+  if (navigator.share) navigator.share({title:'Vault Chat',url:guestLinkUrl});
   else copyLink();
 }
 
 async function joinFromLink(url) {
-  const match = url.match(/#join=(.+)/);
-  if (!match) { toast('Ungültiger Link', 'err'); return; }
-  const targetId = match[1];
+  const match = url.match(/#room=(.+)/);
+  if (!match) { toast('Ungültiger Link','err'); return; }
+  const rid = match[1];
   document.getElementById('chatPeerName').textContent = 'GAST';
   showScreen('chatScreen');
-  addSysMsg('⏳ Verbinde mit verschlüsseltem Chat...');
+  addSysMsg('⏳ Verbinde...');
   try {
-    await initConnection(targetId);
-  } catch(e) { toast('Verbindungsfehler', 'err'); }
+    myKeyPair = await genKeyPair();
+    role = 'guest';
+    await connect();
+    send({type:'JOIN', roomId: rid});
+    // Send our key to host
+    const pub = await exportPub(myKeyPair);
+    relay({type:'KEY', pub});
+  } catch(e) {
+    toast('Verbindungsfehler','err');
+  }
 }
 
 async function showNewLink() {
   try {
-    if (!myId) await initConnection(null);
-    const url = `${location.origin}${location.pathname}#join=${myId}`;
+    myKeyPair = await genKeyPair();
+    role = 'host';
+    if (!ws || ws.readyState !== 1) await connect();
+    send({type:'CREATE'});
+    // Wait for roomId
+    await new Promise(r => setTimeout(r, 1000));
+    if (!roomId) { toast('Fehler beim Erstellen','err'); return; }
+    const url = location.origin + location.pathname + '#room=' + roomId;
     modalLinkUrl = url;
     document.getElementById('modalLinkDisplay').textContent = url;
     document.getElementById('newLinkModal').classList.add('show');
-  } catch(e) { toast('Fehler: ' + e.message, 'err'); }
+  } catch(e) { toast('Fehler: '+e.message,'err'); }
 }
 
 function copyModalLink() {
-  navigator.clipboard.writeText(modalLinkUrl).then(() => toast('Kopiert! 📋', 'ok'));
+  navigator.clipboard.writeText(modalLinkUrl).then(() => toast('Kopiert! 📋','ok'));
 }
-
 function shareModalLink() {
-  if (navigator.share) navigator.share({ title: 'Vault Chat', url: modalLinkUrl });
+  if (navigator.share) navigator.share({title:'Vault Chat',url:modalLinkUrl});
   else copyModalLink();
 }
 
-// Auto join
 window.addEventListener('load', () => {
-  if (location.hash.startsWith('#join=')) joinFromLink(location.href);
-  const stored = JSON.parse(localStorage.getItem('vc_user') || 'null');
-  if (stored) {
-    currentUser = stored.username;
-    contacts = JSON.parse(localStorage.getItem('vc_contacts') || '[]');
-    document.getElementById('settingsUsername').textContent = stored.username;
+  if (location.hash.startsWith('#room=')) joinFromLink(location.href);
+  const s = JSON.parse(localStorage.getItem('vc_user')||'null');
+  if (s) {
+    currentUser = s.username;
+    contacts = JSON.parse(localStorage.getItem('vc_contacts')||'[]');
+    document.getElementById('settingsUsername').textContent = s.username;
     renderContacts();
     showScreen('contactsScreen');
   }
 });
 
-// ── CHAT ───────────────────────────────────────────────────────
+// ── CHAT ──────────────────────────────────────────────────────
 async function sendMessage() {
   if (pendingFile) { await sendFile(); return; }
   const inp = document.getElementById('msgInput');
   const txt = inp.value.trim();
-  if (!txt || !sharedKey) { if (!sharedKey) toast('Nicht verbunden', 'err'); return; }
+  if (!txt) return;
+  if (!sharedKey) { toast('Nicht verbunden','err'); return; }
   try {
-    const ct = await encrypt(txt);
-    sendToPartner({ type: 'MSG', ct });
+    const ct = await enc(txt);
+    relay({type:'MSG', ct});
     const el = addMsg('me', txt);
-    if (destroySeconds > 0) scheduleDestroy(el);
+    if (destroySeconds>0) scheduleDestroy(el);
     inp.value = '';
     inp.style.height = 'auto';
-  } catch(e) { toast('Sendefehler', 'err'); }
+  } catch(e) { toast('Sendefehler','err'); }
 }
 
 function onTyping() {
   if (!sharedKey) return;
-  clearTimeout(typingTimer);
-  sendToPartner({ type: 'TYPING' });
+  relay({type:'TYPING'});
 }
 
 function showPartnerTyping() {
@@ -857,50 +708,40 @@ function showPartnerTyping() {
 
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  el.style.height = Math.min(el.scrollHeight,120)+'px';
 }
 
 // ── FILES ─────────────────────────────────────────────────────
 function onFileSelected(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { toast('Max 10MB', 'err'); input.value = ''; return; }
+  if (file.size > 10*1024*1024) { toast('Max 10MB','err'); input.value=''; return; }
   pendingFile = file;
-  document.getElementById('fpFileName').textContent = file.name + ' (' + formatSize(file.size) + ')';
+  document.getElementById('fpFileName').textContent = file.name+' ('+formatSize(file.size)+')';
   document.getElementById('filePreviewBar').style.display = 'flex';
   input.value = '';
 }
-
 function cancelFile() {
   pendingFile = null;
   document.getElementById('filePreviewBar').style.display = 'none';
 }
-
 async function sendFile() {
-  if (!pendingFile || !sharedKey) return;
+  if (!pendingFile||!sharedKey) return;
   const file = pendingFile;
   cancelFile();
+  toast('Sende...');
   try {
-    toast('Sende...');
-    const buf = await file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    const ct = await encrypt(bytes);
-    sendToPartner({ type: 'FILE', ct, name: file.name, mime: file.type });
-    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-      addMediaMsg('me', bytes, file.name, file.type);
-    } else {
-      addFileMsg('me', bytes, file.name, file.type);
-    }
-    toast('Gesendet ✓', 'ok');
-  } catch(e) { toast('Fehler', 'err'); }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const ct = await enc(bytes);
+    relay({type:'FILE', ct, name:file.name, mime:file.type});
+    if (file.type.startsWith('image/')||file.type.startsWith('video/')) addMediaMsg('me',bytes,file.name,file.type);
+    else addFileMsg('me',bytes,file.name,file.type);
+    toast('Gesendet ✓','ok');
+  } catch(e) { toast('Fehler','err'); }
 }
-
 function receiveFile(bytes, name, mime) {
-  if (mime && (mime.startsWith('image/') || mime.startsWith('video/'))) {
-    addMediaMsg('them', bytes, name, mime);
-  } else {
-    addFileMsg('them', bytes, name, mime);
-  }
+  if (mime&&(mime.startsWith('image/')||mime.startsWith('video/'))) addMediaMsg('them',bytes,name,mime);
+  else addFileMsg('them',bytes,name,mime);
 }
 
 // ── VOICE ─────────────────────────────────────────────────────
@@ -908,24 +749,23 @@ async function toggleRecording() {
   const btn = document.getElementById('recordBtn');
   if (!isRecording) {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
       mediaRecorder = new MediaRecorder(stream);
       recordChunks = [];
       mediaRecorder.ondataavailable = e => recordChunks.push(e.data);
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(recordChunks, { type: 'audio/webm' });
-        const bytes = new Uint8Array(await blob.arrayBuffer());
-        const ct = await encrypt(bytes);
-        sendToPartner({ type: 'VOICE', ct });
+        const bytes = new Uint8Array(await new Blob(recordChunks,{type:'audio/webm'}).arrayBuffer());
+        const ct = await enc(bytes);
+        relay({type:'VOICE', ct});
         addVoiceMsg('me', bytes);
-        toast('Sprachnachricht gesendet ✓', 'ok');
+        toast('Sprachnachricht gesendet ✓','ok');
       };
       mediaRecorder.start();
       isRecording = true;
       btn.classList.add('recording');
       btn.textContent = '⏹️';
-    } catch(e) { toast('Mikrofon-Zugriff verweigert', 'err'); }
+    } catch(e) { toast('Mikrofon verweigert','err'); }
   } else {
     mediaRecorder.stop();
     isRecording = false;
@@ -935,215 +775,173 @@ async function toggleRecording() {
 }
 
 // ── CALLS ─────────────────────────────────────────────────────
-const RTC_CONFIG = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' }
-  ]
-};
+const RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 
-async function startCall(video = false) {
-  if (!sharedKey) { toast('Nicht verbunden', 'err'); return; }
+async function startCall(video) {
+  if (!sharedKey) { toast('Nicht verbunden','err'); return; }
   isVideoCall = video;
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video });
-    if (video) {
-      document.getElementById('localVideo').srcObject = localStream;
-      document.getElementById('localVideo').style.display = 'block';
-    }
-    peerConn = new RTCPeerConnection(RTC_CONFIG);
-    localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-    peerConn.onicecandidate = e => {
-      if (e.candidate) sendToPartner({ type: 'ICE', candidate: e.candidate });
-    };
-    peerConn.ontrack = e => handleRemoteStream(e.streams[0], video);
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true,video});
+    if (video) { document.getElementById('localVideo').srcObject=localStream; document.getElementById('localVideo').style.display='block'; }
+    peerConn = new RTCPeerConnection(RTC);
+    localStream.getTracks().forEach(t => peerConn.addTrack(t,localStream));
+    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE',candidate:e.candidate}); };
+    peerConn.ontrack = e => handleRemoteStream(e.streams[0],video);
     const offer = await peerConn.createOffer();
     await peerConn.setLocalDescription(offer);
-    sendToPartner({ type: 'CALL_OFFER', sdp: offer, video });
+    relay({type:'CALL_OFFER',sdp:offer,video});
     document.getElementById('callPeerName').textContent = document.getElementById('chatPeerName').textContent;
-    document.getElementById('callStatus').textContent = video ? '📹 VIDEOANRUF...' : '📞 RUFE AN...';
+    document.getElementById('callStatus').textContent = video?'📹 VIDEOANRUF...':'📞 RUFE AN...';
     showScreen('callScreen');
     startCallTimer();
-  } catch(e) { toast('Kamera/Mikrofon Fehler', 'err'); }
+  } catch(e) { toast('Kamera/Mikrofon Fehler','err'); }
 }
 
 async function acceptCall() {
   document.getElementById('incomingCall').classList.remove('show');
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideoCall });
-    peerConn = new RTCPeerConnection(RTC_CONFIG);
-    localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-    peerConn.onicecandidate = e => {
-      if (e.candidate) sendToPartner({ type: 'ICE', candidate: e.candidate });
-    };
-    peerConn.ontrack = e => handleRemoteStream(e.streams[0], isVideoCall);
-    await peerConn.setRemoteDescription(new RTCSessionDescription(incomingCallOffer.sdp));
-    pendingIceCandidates.forEach(c => peerConn.addIceCandidate(c));
-    pendingIceCandidates = [];
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true,video:isVideoCall});
+    peerConn = new RTCPeerConnection(RTC);
+    localStream.getTracks().forEach(t => peerConn.addTrack(t,localStream));
+    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE',candidate:e.candidate}); };
+    peerConn.ontrack = e => handleRemoteStream(e.streams[0],isVideoCall);
+    await peerConn.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
+    pendingIce.forEach(c => peerConn.addIceCandidate(c)); pendingIce=[];
     const answer = await peerConn.createAnswer();
     await peerConn.setLocalDescription(answer);
-    sendToPartner({ type: 'CALL_ANSWER', sdp: answer });
+    relay({type:'CALL_ANSWER',sdp:answer});
     document.getElementById('callPeerName').textContent = document.getElementById('chatPeerName').textContent;
     document.getElementById('callStatus').textContent = '🔒 VERBUNDEN';
     showScreen('callScreen');
     startCallTimer();
-  } catch(e) { toast('Fehler beim Annehmen', 'err'); }
+  } catch(e) { toast('Fehler beim Annehmen','err'); }
 }
 
 function declineCall() {
   document.getElementById('incomingCall').classList.remove('show');
-  sendToPartner({ type: 'CALL_END' });
+  relay({type:'CALL_END'});
 }
 
 function handleRemoteStream(stream, video) {
   document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-  document.getElementById('callAvatar').style.display = video ? 'none' : 'flex';
+  document.getElementById('callAvatar').style.display = video?'none':'flex';
   if (video) {
-    document.getElementById('remoteVideo').srcObject = stream;
-    document.getElementById('remoteVideo').style.display = 'block';
+    document.getElementById('remoteVideo').srcObject=stream;
+    document.getElementById('remoteVideo').style.display='block';
   } else {
-    const audio = new Audio();
-    audio.srcObject = stream;
-    audio.play();
+    const a = new Audio(); a.srcObject=stream; a.play();
   }
 }
 
-function hangup() {
-  sendToPartner({ type: 'CALL_END' });
-  endCall();
-}
+function hangup() { relay({type:'CALL_END'}); endCall(); }
 
 function endCall() {
-  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-  if (peerConn) { peerConn.close(); peerConn = null; }
-  clearInterval(callTimer);
-  callSeconds = 0;
-  document.getElementById('callTimer').textContent = '00:00';
-  document.getElementById('callTimer').style.display = 'none';
-  document.getElementById('remoteVideo').style.display = 'none';
-  document.getElementById('localVideo').style.display = 'none';
-  document.getElementById('remoteVideo').srcObject = null;
-  document.getElementById('localVideo').srcObject = null;
+  if (localStream) { localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  if (peerConn) { peerConn.close(); peerConn=null; }
+  clearInterval(callTimer); callSeconds=0;
+  document.getElementById('callTimer').textContent='00:00';
+  document.getElementById('callTimer').style.display='none';
+  document.getElementById('remoteVideo').style.display='none';
+  document.getElementById('localVideo').style.display='none';
+  document.getElementById('remoteVideo').srcObject=null;
+  document.getElementById('localVideo').srcObject=null;
   showScreen('chatScreen');
   addSysMsg('📵 Anruf beendet');
 }
 
 function startCallTimer() {
-  clearInterval(callTimer);
-  callSeconds = 0;
+  clearInterval(callTimer); callSeconds=0;
   callTimer = setInterval(() => {
     callSeconds++;
-    const m = String(Math.floor(callSeconds/60)).padStart(2,'0');
-    const s = String(callSeconds%60).padStart(2,'0');
-    document.getElementById('callTimer').textContent = m + ':' + s;
-    document.getElementById('callTimer').style.display = 'block';
-  }, 1000);
+    const m=String(Math.floor(callSeconds/60)).padStart(2,'0');
+    const s=String(callSeconds%60).padStart(2,'0');
+    document.getElementById('callTimer').textContent=m+':'+s;
+    document.getElementById('callTimer').style.display='block';
+  },1000);
 }
 
 function toggleMute() {
-  isMuted = !isMuted;
-  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
-  const btn = document.getElementById('muteBtn');
-  btn.textContent = isMuted ? '🔇' : '🎤';
-  btn.classList.toggle('active', isMuted);
+  isMuted=!isMuted;
+  if (localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!isMuted);
+  document.getElementById('muteBtn').textContent=isMuted?'🔇':'🎤';
+  document.getElementById('muteBtn').classList.toggle('active',isMuted);
 }
-
 function toggleSpeaker() { toast('Lautsprecher wird vom System gesteuert'); }
 
 // ── LEAVE ─────────────────────────────────────────────────────
 function leaveChat() {
-  if (ws) { ws.close(); ws = null; }
-  sharedKey = null; partnerId = null;
-  document.getElementById('messages').innerHTML = '';
-  if (currentUser) {
-    showScreen('contactsScreen');
-  } else {
-    document.getElementById('guestLinkDisplay').style.display = 'none';
-    document.getElementById('guestStatus').style.display = 'none';
-    document.getElementById('guestBtns').style.display = 'block';
-    document.getElementById('guestCopyBtns').style.display = 'none';
-    document.getElementById('createLinkBtn').textContent = '🔗 CHAT-LINK ERSTELLEN';
-    document.getElementById('createLinkBtn').disabled = false;
-    document.getElementById('guestWaiting').style.display = 'inline-flex';
-    document.getElementById('guestConnected').style.display = 'none';
+  if (ws) { ws.close(); ws=null; }
+  sharedKey=null; roomId=null;
+  document.getElementById('messages').innerHTML='';
+  if (currentUser) showScreen('contactsScreen');
+  else {
+    document.getElementById('guestLinkDisplay').style.display='none';
+    document.getElementById('guestStatus').style.display='none';
+    document.getElementById('guestBtns').style.display='block';
+    document.getElementById('guestCopyBtns').style.display='none';
+    document.getElementById('createLinkBtn').textContent='🔗 CHAT-LINK ERSTELLEN';
+    document.getElementById('createLinkBtn').disabled=false;
+    document.getElementById('guestWaiting').style.display='inline-flex';
+    document.getElementById('guestConnected').style.display='none';
     showWelcome();
   }
 }
 
 // ── MESSAGES ──────────────────────────────────────────────────
 function addMsg(who, text) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + who;
-  d.innerHTML = '<div class="msg-bubble">' + esc(text) + '</div><div class="msg-meta">' + now() + ' 🔒</div>';
-  appendMsg(d);
-  return d;
+  const d=document.createElement('div');
+  d.className='msg '+who;
+  d.innerHTML='<div class="msg-bubble">'+esc(text)+'</div><div class="msg-meta">'+now()+' 🔒</div>';
+  appendMsg(d); return d;
 }
-
 function addSysMsg(text) {
-  const d = document.createElement('div');
-  d.className = 'msg sys';
-  d.innerHTML = '<div class="msg-bubble">' + esc(text) + '</div>';
+  const d=document.createElement('div');
+  d.className='msg sys';
+  d.innerHTML='<div class="msg-bubble">'+esc(text)+'</div>';
   appendMsg(d);
 }
-
 function addMediaMsg(who, bytes, name, mime) {
-  const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
-  const d = document.createElement('div');
-  d.className = 'msg ' + who;
+  const url=URL.createObjectURL(new Blob([bytes],{type:mime}));
+  const d=document.createElement('div');
+  d.className='msg '+who;
   if (mime.startsWith('video/')) {
-    d.innerHTML = '<div class="msg-bubble"><video src="' + url + '" controls style="max-width:100%;border-radius:10px;max-height:200px;"></video></div><div class="msg-meta">' + now() + ' 🔒</div>';
+    d.innerHTML='<div class="msg-bubble"><video src="'+url+'" controls style="max-width:100%;border-radius:10px;max-height:200px"></video></div><div class="msg-meta">'+now()+' 🔒</div>';
   } else {
-    d.innerHTML = '<div class="msg-bubble"><img class="img-preview" src="' + url + '" onclick="window.open(this.src)"></div><div class="msg-meta">' + now() + ' 🔒</div>';
+    d.innerHTML='<div class="msg-bubble"><img class="img-preview" src="'+url+'" onclick="window.open(this.src)"></div><div class="msg-meta">'+now()+' 🔒</div>';
   }
   appendMsg(d);
-  if (destroySeconds > 0) scheduleDestroy(d);
+  if (destroySeconds>0) scheduleDestroy(d);
 }
-
 function addFileMsg(who, bytes, name, mime) {
-  const url = URL.createObjectURL(new Blob([bytes], { type: mime || 'application/octet-stream' }));
-  const d = document.createElement('div');
-  d.className = 'msg ' + who;
-  d.innerHTML = '<div class="msg-bubble"><div class="file-msg"><span class="file-icon">📄</span><div class="file-info"><div class="file-name">' + esc(name) + '</div><div class="file-size">' + formatSize(bytes.length) + '</div><a class="file-dl" href="' + url + '" download="' + esc(name) + '">⬇ Herunterladen</a></div></div></div><div class="msg-meta">' + now() + ' 🔒</div>';
+  const url=URL.createObjectURL(new Blob([bytes],{type:mime||'application/octet-stream'}));
+  const d=document.createElement('div');
+  d.className='msg '+who;
+  d.innerHTML='<div class="msg-bubble"><div class="file-msg"><span class="file-icon">📄</span><div class="file-info"><div class="file-name">'+esc(name)+'</div><div class="file-size">'+formatSize(bytes.length)+'</div><a class="file-dl" href="'+url+'" download="'+esc(name)+'">⬇ Herunterladen</a></div></div></div><div class="msg-meta">'+now()+' 🔒</div>';
   appendMsg(d);
 }
-
 function addVoiceMsg(who, bytes) {
-  const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/webm' }));
-  const id = 'v' + Date.now();
-  const d = document.createElement('div');
-  d.className = 'msg ' + who;
-  d.innerHTML = '<div class="msg-bubble"><div class="voice-msg"><button class="voice-play" id="' + id + '" onclick="playVoice(\'' + url + '\',this)">▶</button><div class="voice-wave"></div><span class="voice-dur">🎤</span></div></div><div class="msg-meta">' + now() + ' 🔒</div>';
+  const url=URL.createObjectURL(new Blob([bytes],{type:'audio/webm'}));
+  const d=document.createElement('div');
+  d.className='msg '+who;
+  d.innerHTML='<div class="msg-bubble"><div class="voice-msg"><button class="voice-play" onclick="playVoice(\''+url+'\',this)">▶</button><div class="voice-wave"></div><span>🎤</span></div></div><div class="msg-meta">'+now()+' 🔒</div>';
   appendMsg(d);
 }
-
 function playVoice(url, btn) {
-  const audio = new Audio(url);
-  btn.textContent = '⏸';
-  audio.play();
-  audio.onended = () => btn.textContent = '▶';
+  const a=new Audio(url); btn.textContent='⏸'; a.play(); a.onended=()=>btn.textContent='▶';
 }
-
 function appendMsg(el) {
-  const c = document.getElementById('messages');
-  c.appendChild(el);
-  c.scrollTop = c.scrollHeight;
+  const c=document.getElementById('messages');
+  c.appendChild(el); c.scrollTop=c.scrollHeight;
 }
-
 function scheduleDestroy(el) {
-  if (!destroySeconds || !el) return;
-  setTimeout(() => {
-    el.style.transition = 'opacity 0.5s';
-    el.style.opacity = '0';
-    setTimeout(() => el.remove(), 500);
-  }, destroySeconds * 1000);
+  if (!destroySeconds||!el) return;
+  setTimeout(() => { el.style.transition='opacity .5s'; el.style.opacity='0'; setTimeout(()=>el.remove(),500); }, destroySeconds*1000);
 }
-
 function setDestroyTime(val) {
-  destroySeconds = parseInt(val);
-  const labels = { '0':'Aus','10':'10 Sek','30':'30 Sek','60':'1 Min','300':'5 Min','3600':'1 Std','86400':'24 Std' };
-  document.getElementById('destroyLabel').textContent = labels[val] || 'Aus';
-  if (sharedKey) sendToPartner({ type: 'DESTROY_TIME', val: destroySeconds });
+  destroySeconds=parseInt(val);
+  const l={'0':'Aus','10':'10 Sek','30':'30 Sek','60':'1 Min','300':'5 Min','3600':'1 Std','86400':'24 Std'};
+  document.getElementById('destroyLabel').textContent=l[val]||'Aus';
+  if (sharedKey) relay({type:'DESTROY',val:destroySeconds});
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────
@@ -1151,29 +949,19 @@ function goBackFromSettings() {
   if (currentUser) showScreen('contactsScreen');
   else showScreen('chatScreen');
 }
-
-// ── MODAL ─────────────────────────────────────────────────────
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function now() {
-  return new Date().toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
-}
-function formatSize(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-  return (b/1048576).toFixed(1) + ' MB';
-}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function now() { return new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }
+function formatSize(b) { if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
 let toastTimer;
 function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (type ? ' ' + type : '');
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='show'+(type?' '+type:'');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 2500);
+  toastTimer=setTimeout(()=>el.className='',2500);
 }
 </script>
 </body>
