@@ -514,7 +514,7 @@ function wsSend(obj) {
 }
 
 async function handleSignal(msg) {
-  if (msg.type === 'REGISTERED') {
+  if (msg.type === 'REGISTERED' || msg.type === 'ID') {
     myId = msg.id;
     console.log('My ID:', myId);
   }
@@ -611,8 +611,9 @@ async function initConnection(targetId = null) {
     });
 
     if (targetId) {
-      // We are joining — send key to target
+      // We are joining — send key to target after small delay
       partnerId = targetId;
+      await new Promise(r => setTimeout(r, 500));
       sendToPartner({ type: 'KEY', pub: myPub });
     } else {
       // We are hosting — wait for partner to send key, then respond
