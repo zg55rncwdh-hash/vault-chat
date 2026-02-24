@@ -1,0 +1,17 @@
+{
+“name”: “Vault Chat”,
+“short_name”: “VaultChat”,
+“description”: “Ende-zu-Ende verschlüsselter P2P Chat”,
+“start_url”: “/vault-chat/”,
+“display”: “standalone”,
+“background_color”: “#0a0a0f”,
+“theme_color”: “#0a0a0f”,
+“orientation”: “portrait”,
+“icons”: [
+{
+“src”: “data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>”,
+“sizes”: “192x192”,
+“type”: “image/svg+xml”
+}
+]
+}
