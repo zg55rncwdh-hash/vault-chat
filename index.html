@@ -1299,28 +1299,18 @@ let isVideoCall = false;
 let incomingCallConn = null;
 
 // ── PEERJS CONFIG ──────────────────────────────────────────────
+// Kostenloser PeerJS Cloud Server — kein eigener Server nötig!
 const PEER_CONFIG = {
-  host: 'vault-chat.onrender.com',
-  port: 443,
-  path: '/peerjs',
-  secure: true,
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
     ]
   }
 };
 
-// Fallback to PeerJS cloud if own server fails
-const PEER_CONFIG_FALLBACK = {
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-    ]
-  }
-};
+const PEER_CONFIG_FALLBACK = PEER_CONFIG;
 
 // ── CRYPTO (AES-256-GCM + ECDH simulated Kyber hybrid) ────────
 async function generateKeyPair() {
