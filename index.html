@@ -434,14 +434,15 @@ async function handleMsg(msg) {
   }
 
   if (msg.type === 'JOINED') {
-    // Guest joined our room — send our public key
-    const pub = await exportPub(myKeyPair);
-    relay({type:'KEY', pub});
+    // Guest: server confirmed join — just wait for host to send KEY
+    console.log('Joined room, waiting for host key...');
   }
 
   if (msg.type === 'GUEST_JOINED') {
-    // Host gets notified guest joined — guest will send key first
-    toast('Partner verbunden! 🔒', 'ok');
+    // Host: guest joined — send our public key to guest
+    console.log('Guest joined, sending host key...');
+    const pub = await exportPub(myKeyPair);
+    relay({type:'KEY', pub});
   }
 
   if (msg.type === 'PARTNER_LEFT') {
@@ -461,20 +462,17 @@ async function handleMsg(msg) {
 
 async function handleRelay(data) {
   if (data.type === 'KEY') {
+    // Host sent us their key — derive shared key and send ours back
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
-
-    // If we are the guest, send our key back
-    if (role === 'guest') {
-      const pub = await exportPub(myKeyPair);
-      relay({type:'KEY_ACK', pub});
-    }
-
+    // Send our key back to host
+    const myPub = await exportPub(myKeyPair);
+    relay({type:'KEY_ACK', pub: myPub});
     onConnected();
   }
 
   if (data.type === 'KEY_ACK') {
-    // Host receives guest key
+    // Guest sent their key — derive shared key
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
     onConnected();
@@ -633,9 +631,7 @@ async function joinFromLink(url) {
     role = 'guest';
     await connect();
     send({type:'JOIN', roomId: rid});
-    // Send our key to host
-    const pub = await exportPub(myKeyPair);
-    relay({type:'KEY', pub});
+    // Wait for host to send us their KEY
   } catch(e) {
     toast('Verbindungsfehler','err');
   }
