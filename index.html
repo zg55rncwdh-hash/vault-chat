@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -439,8 +440,10 @@ async function handleMsg(msg) {
   }
 
   if (msg.type === 'GUEST_JOINED') {
-    // Host: guest joined — send our public key to guest
-    console.log('Guest joined, sending host key...');
+    // Host: guest joined — show chat screen FIRST so we can receive KEY_ACK
+    document.getElementById('chatPeerName').textContent = 'GAST';
+    showScreen('chatScreen');
+    addSysMsg('⏳ Schlüsselaustausch...');
     const pub = await exportPub(myKeyPair);
     relay({type:'KEY', pub});
   }
@@ -960,5 +963,6 @@ function toast(msg, type) {
   toastTimer=setTimeout(()=>el.className='',2500);
 }
 </script>
+
 </body>
 </html>
