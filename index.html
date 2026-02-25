@@ -492,6 +492,23 @@ async function handleRelay(data) {
     await peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp));
     pendingIce.forEach(c => peerConn.addIceCandidate(c));
     pendingIce = [];
+    // Caller: set up audio output after answer
+    if (!isVideoCall) {
+      peerConn.ontrack = e => {
+        document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+        const audio = document.createElement('audio');
+        audio.srcObject = e.streams[0];
+        audio.autoplay = true;
+        document.body.appendChild(audio);
+        audio.play().catch(() => {
+          document.getElementById('callStatus').textContent = '👆 TIPPEN FÜR AUDIO';
+          document.getElementById('callScreen').addEventListener('click', () => {
+            audio.play();
+            document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+          }, {once: true});
+        });
+      };
+    }
   }
   if (data.type === 'ICE' && peerConn) {
     const c = new RTCIceCandidate(data.candidate);
