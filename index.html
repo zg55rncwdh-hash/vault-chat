@@ -775,13 +775,19 @@ async function toggleRecording() {
 }
 
 // ── CALLS ─────────────────────────────────────────────────────
-const RTC = {iceServers:[
-  {urls:'stun:stun.relay.metered.ca:80'},
-  {urls:'turn:global.relay.metered.ca:80',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turn:global.relay.metered.ca:80?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turn:global.relay.metered.ca:443',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'}
-]};
+let RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+
+async function loadIceServers() {
+  try {
+    const resp = await fetch('https://vaul12.metered.live/api/v1/turn/credentials?apiKey=940f57ee6941e7021db2acee3e2a6f873519');
+    const iceServers = await resp.json();
+    RTC = {iceServers};
+    console.log('ICE Servers geladen:', iceServers.length);
+  } catch(e) {
+    console.warn('ICE Server Fallback:', e);
+  }
+}
+loadIceServers();
 
 async function startCall(video) {
   if (!sharedKey) { toast('Nicht verbunden','err'); return; }
