@@ -481,25 +481,7 @@ async function handleRelay(data) {
     onConnected();
   }
 
-  if (!sharedKey) return;
-
-  if (data.type === 'MSG') {
-    const text = await dec(data.ct);
-    const el = addMsg('them', text);
-    if (destroySeconds > 0) scheduleDestroy(el);
-  }
-  if (data.type === 'FILE') {
-    const bytes = await dec(data.ct, true);
-    receiveFile(bytes, data.name, data.mime);
-  }
-  if (data.type === 'VOICE') {
-    const bytes = await dec(data.ct, true);
-    addVoiceMsg('them', bytes);
-  }
-  if (data.type === 'TYPING') showPartnerTyping();
-  if (data.type === 'DESTROY') destroySeconds = data.val;
-
-  // WebRTC
+  // WebRTC signals work WITHOUT sharedKey check
   if (data.type === 'CALL_OFFER') {
     incomingOffer = data;
     isVideoCall = data.video;
@@ -517,6 +499,24 @@ async function handleRelay(data) {
     else pendingIce.push(c);
   }
   if (data.type === 'CALL_END') endCall();
+
+  if (!sharedKey) return;
+
+  if (data.type === 'MSG') {
+    const text = await dec(data.ct);
+    const el = addMsg('them', text);
+    if (destroySeconds > 0) scheduleDestroy(el);
+  }
+  if (data.type === 'FILE') {
+    const bytes = await dec(data.ct, true);
+    receiveFile(bytes, data.name, data.mime);
+  }
+  if (data.type === 'VOICE') {
+    const bytes = await dec(data.ct, true);
+    addVoiceMsg('them', bytes);
+  }
+  if (data.type === 'TYPING') showPartnerTyping();
+  if (data.type === 'DESTROY') destroySeconds = data.val;
 }
 
 function onConnected() {
@@ -787,40 +787,80 @@ async function startCall(video) {
   if (!sharedKey) { toast('Nicht verbunden','err'); return; }
   isVideoCall = video;
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({audio:true,video});
-    if (video) { document.getElementById('localVideo').srcObject=localStream; document.getElementById('localVideo').style.display='block'; }
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:video});
     peerConn = new RTCPeerConnection(RTC);
-    localStream.getTracks().forEach(t => peerConn.addTrack(t,localStream));
-    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE',candidate:e.candidate}); };
-    peerConn.ontrack = e => handleRemoteStream(e.streams[0],video);
-    const offer = await peerConn.createOffer();
+    localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
+    peerConn.ontrack = e => {
+      const stream = e.streams[0];
+      if (video) {
+        const rv = document.getElementById('remoteVideo');
+        rv.srcObject = stream;
+        rv.style.display = 'block';
+        const lv = document.getElementById('localVideo');
+        lv.srcObject = localStream;
+        lv.style.display = 'block';
+      } else {
+        const audio = document.createElement('audio');
+        audio.srcObject = stream;
+        audio.autoplay = true;
+        document.body.appendChild(audio);
+      }
+    };
+    peerConn.onconnectionstatechange = () => {
+      if (peerConn.connectionState === 'connected') {
+        document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+      }
+    };
+    const offer = await peerConn.createOffer({offerToReceiveAudio:true, offerToReceiveVideo:video});
     await peerConn.setLocalDescription(offer);
-    relay({type:'CALL_OFFER',sdp:offer,video});
+    relay({type:'CALL_OFFER', sdp:offer, video:video});
     document.getElementById('callPeerName').textContent = document.getElementById('chatPeerName').textContent;
     document.getElementById('callStatus').textContent = video?'📹 VIDEOANRUF...':'📞 RUFE AN...';
     showScreen('callScreen');
     startCallTimer();
-  } catch(e) { toast('Kamera/Mikrofon Fehler','err'); }
+  } catch(e) { toast('Mikrofon/Kamera Fehler: ' + e.message,'err'); }
 }
 
 async function acceptCall() {
   document.getElementById('incomingCall').classList.remove('show');
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({audio:true,video:isVideoCall});
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:isVideoCall});
     peerConn = new RTCPeerConnection(RTC);
-    localStream.getTracks().forEach(t => peerConn.addTrack(t,localStream));
-    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE',candidate:e.candidate}); };
-    peerConn.ontrack = e => handleRemoteStream(e.streams[0],isVideoCall);
+    localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
+    peerConn.ontrack = e => {
+      const stream = e.streams[0];
+      if (isVideoCall) {
+        const rv = document.getElementById('remoteVideo');
+        rv.srcObject = stream;
+        rv.style.display = 'block';
+        const lv = document.getElementById('localVideo');
+        lv.srcObject = localStream;
+        lv.style.display = 'block';
+      } else {
+        const audio = document.createElement('audio');
+        audio.srcObject = stream;
+        audio.autoplay = true;
+        document.body.appendChild(audio);
+      }
+    };
+    peerConn.onconnectionstatechange = () => {
+      if (peerConn.connectionState === 'connected') {
+        document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+      }
+    };
     await peerConn.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
-    pendingIce.forEach(c => peerConn.addIceCandidate(c)); pendingIce=[];
+    pendingIce.forEach(c => peerConn.addIceCandidate(c));
+    pendingIce = [];
     const answer = await peerConn.createAnswer();
     await peerConn.setLocalDescription(answer);
-    relay({type:'CALL_ANSWER',sdp:answer});
+    relay({type:'CALL_ANSWER', sdp:answer});
     document.getElementById('callPeerName').textContent = document.getElementById('chatPeerName').textContent;
-    document.getElementById('callStatus').textContent = '🔒 VERBUNDEN';
+    document.getElementById('callStatus').textContent = '📞 VERBINDE...';
     showScreen('callScreen');
     startCallTimer();
-  } catch(e) { toast('Fehler beim Annehmen','err'); }
+  } catch(e) { toast('Fehler: ' + e.message,'err'); }
 }
 
 function declineCall() {
@@ -828,16 +868,7 @@ function declineCall() {
   relay({type:'CALL_END'});
 }
 
-function handleRemoteStream(stream, video) {
-  document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-  document.getElementById('callAvatar').style.display = video?'none':'flex';
-  if (video) {
-    document.getElementById('remoteVideo').srcObject=stream;
-    document.getElementById('remoteVideo').style.display='block';
-  } else {
-    const a = new Audio(); a.srcObject=stream; a.play();
-  }
-}
+function handleRemoteStream(stream, video) {}
 
 function hangup() { relay({type:'CALL_END'}); endCall(); }
 
