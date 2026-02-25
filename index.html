@@ -791,6 +791,7 @@ async function startCall(video) {
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
     peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
     peerConn.ontrack = e => {
+      document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
       const stream = e.streams[0];
       if (video) {
         const rv = document.getElementById('remoteVideo');
@@ -804,11 +805,22 @@ async function startCall(video) {
         audio.srcObject = stream;
         audio.autoplay = true;
         document.body.appendChild(audio);
+        audio.play().catch(() => {
+          // Safari blocks autoplay — show tap hint
+          document.getElementById('callStatus').textContent = '👆 BILDSCHIRM TIPPEN FÜR AUDIO';
+          document.getElementById('callScreen').addEventListener('click', () => {
+            audio.play();
+            document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+          }, {once: true});
+        });
       }
     };
-    peerConn.onconnectionstatechange = () => {
-      if (peerConn.connectionState === 'connected') {
+    peerConn.oniceconnectionstatechange = () => {
+      if (peerConn.iceConnectionState === 'connected' || peerConn.iceConnectionState === 'completed') {
         document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+      }
+      if (peerConn.iceConnectionState === 'failed') {
+        toast('Anruf fehlgeschlagen — Verbindung nicht möglich', 'err');
       }
     };
     const offer = await peerConn.createOffer({offerToReceiveAudio:true, offerToReceiveVideo:video});
@@ -829,6 +841,7 @@ async function acceptCall() {
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
     peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
     peerConn.ontrack = e => {
+      document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
       const stream = e.streams[0];
       if (isVideoCall) {
         const rv = document.getElementById('remoteVideo');
@@ -842,11 +855,21 @@ async function acceptCall() {
         audio.srcObject = stream;
         audio.autoplay = true;
         document.body.appendChild(audio);
+        audio.play().catch(() => {
+          document.getElementById('callStatus').textContent = '👆 BILDSCHIRM TIPPEN FÜR AUDIO';
+          document.getElementById('callScreen').addEventListener('click', () => {
+            audio.play();
+            document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+          }, {once: true});
+        });
       }
     };
-    peerConn.onconnectionstatechange = () => {
-      if (peerConn.connectionState === 'connected') {
+    peerConn.oniceconnectionstatechange = () => {
+      if (peerConn.iceConnectionState === 'connected' || peerConn.iceConnectionState === 'completed') {
         document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
+      }
+      if (peerConn.iceConnectionState === 'failed') {
+        toast('Anruf fehlgeschlagen', 'err');
       }
     };
     await peerConn.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
