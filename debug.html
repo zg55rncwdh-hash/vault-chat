@@ -12,19 +12,17 @@ button { background: #0f0; color: #000; border: none; padding: .5rem 1rem; margi
 .err { color: #f00; }
 .ok { color: #0f0; }
 .info { color: #ff0; }
-input { background: #222; color: #0f0; border: 1px solid #0f0; padding: .3rem; font-family: monospace; width: 100%; margin: .2rem 0; }
+input { background: #222; color: #0f0; border: 1px solid #0f0; padding: .3rem; font-family: monospace; width: 100%; margin: .2rem 0; box-sizing: border-box; }
 </style>
 </head>
 <body>
 <h2>🔬 VAULT CHAT DEBUG</h2>
-
-<div>
-  <input id="wsUrl" value="wss://vault-chat.onrender.com" placeholder="WebSocket URL">
-  <button onclick="createRoom()">HOST: Raum erstellen</button>
-  <input id="roomInput" placeholder="Room ID eingeben">
-  <button onclick="joinRoom()">GAST: Beitreten</button>
-</div>
+<input id="wsUrl" value="wss://vault-chat.onrender.com">
+<button onclick="createRoom()">HOST: Raum erstellen</button>
 <br>
+<input id="roomInput" placeholder="Room ID eingeben">
+<button onclick="joinRoom()">GAST: Beitreten</button>
+<br><br>
 <button onclick="startCall()">📞 Anrufen</button>
 <button onclick="acceptCall()">✅ Annehmen</button>
 <button onclick="clearLog()">🗑 Log löschen</button>
@@ -32,7 +30,7 @@ input { background: #222; color: #0f0; border: 1px solid #0f0; padding: .3rem; f
 <div id="log"></div>
 
 <script>
-const ICE = {
+const ICE_CONFIG = {
   iceServers:[
     {urls:'stun:stun.relay.metered.ca:80'},
     {urls:'turn:global.relay.metered.ca:80',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
@@ -46,6 +44,7 @@ const ICE = {
 
 let ws, pc, localStream, roomId, role;
 let pendingIce = [];
+let incomingOffer = null;
 
 function log(msg, type='info') {
   const d = document.getElementById('log');
@@ -55,148 +54,129 @@ function log(msg, type='info') {
 }
 function clearLog() { document.getElementById('log').innerHTML = ''; }
 
-function connect() {
-  const url = document.getElementById('wsUrl').value;
+function initWS(url) {
   ws = new WebSocket(url);
-  ws.onopen = () => log('WebSocket verbunden ✅', 'ok');
   ws.onclose = () => log('WebSocket getrennt', 'err');
-  ws.onerror = e => log('WebSocket Fehler: ' + e, 'err');
+  ws.onerror = () => log('WebSocket Fehler', 'err');
   ws.onmessage = e => {
     const msg = JSON.parse(e.data);
-    log('← ' + JSON.stringify(msg).slice(0,200));
-    if (msg.type === 'CREATED') { roomId = msg.roomId; log('Room ID: ' + roomId, 'ok'); }
-    if (msg.type === 'GUEST_JOINED') log('Gast beigetreten! ✅', 'ok');
-    if (msg.type === 'JOINED') { log('Raum beigetreten ✅', 'ok'); }
+    log('← ' + JSON.stringify(msg).slice(0, 200));
+    if (msg.type === 'CREATED') {
+      roomId = msg.roomId;
+      log('✅ Room ID: ' + roomId, 'ok');
+    }
+    if (msg.type === 'GUEST_JOINED') log('✅ Gast beigetreten!', 'ok');
+    if (msg.type === 'JOINED') log('✅ Raum beigetreten', 'ok');
     if (msg.type === 'RELAY') handleRelay(msg.data);
   };
+  return new Promise(res => { ws.onopen = () => { log('✅ WebSocket verbunden', 'ok'); res(); }; });
 }
 
-function send(data) {
-  log('→ ' + JSON.stringify(data).slice(0,200));
-  ws.send(JSON.stringify(data));
-}
-
-function createRoom() {
-  connect();
+async function createRoom() {
   role = 'host';
-  setTimeout(() => send({type:'CREATE'}), 500);
+  await initWS(document.getElementById('wsUrl').value);
+  ws.send(JSON.stringify({type:'CREATE'}));
+  log('→ CREATE gesendet');
 }
 
-function joinRoom() {
-  connect();
+async function joinRoom() {
   role = 'guest';
-  roomId = document.getElementById('roomInput').value;
-  setTimeout(() => send({type:'JOIN', roomId}), 500);
+  roomId = document.getElementById('roomInput').value.trim();
+  if (!roomId) { log('Room ID eingeben!', 'err'); return; }
+  await initWS(document.getElementById('wsUrl').value);
+  ws.send(JSON.stringify({type:'JOIN', roomId}));
+  log('→ JOIN gesendet für: ' + roomId);
+}
+
+function wsRelay(data) {
+  ws.send(JSON.stringify({type:'RELAY', data}));
+  log('→ RELAY: ' + data.type);
+}
+
+function setupPC() {
+  pc = new RTCPeerConnection(ICE_CONFIG);
+  log('RTCPeerConnection erstellt');
+
+  pc.onicecandidate = e => {
+    if (e.candidate) {
+      const c = e.candidate.candidate;
+      const typ = c.includes('typ relay') ? '🟢 RELAY' :
+                  c.includes('typ srflx') ? '🟡 SRFLX' : '🔵 HOST';
+      log('ICE: ' + typ + ' — ' + c.slice(0, 80));
+      wsRelay({type:'ICE', candidate:e.candidate});
+    } else {
+      log('✅ ICE Gathering abgeschlossen', 'ok');
+    }
+  };
+
+  pc.oniceconnectionstatechange = () => {
+    const s = pc.iceConnectionState;
+    log('ICE State: ' + s, s === 'connected' || s === 'completed' ? 'ok' : s === 'failed' ? 'err' : 'info');
+  };
+  pc.onconnectionstatechange = () => log('Connection: ' + pc.connectionState);
+  pc.onsignalingstatechange = () => log('Signaling: ' + pc.signalingState);
+
+  pc.ontrack = e => {
+    log('🎉 AUDIO TRACK EMPFANGEN!', 'ok');
+    const audio = new Audio();
+    audio.srcObject = e.streams[0];
+    audio.play().then(() => log('▶️ Audio spielt!', 'ok')).catch(err => log('Audio play Fehler: ' + err, 'err'));
+  };
 }
 
 async function startCall() {
   log('--- ANRUF STARTEN ---', 'ok');
   try {
     localStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    log('Mikrofon: OK ✅', 'ok');
-    
-    pc = new RTCPeerConnection(ICE);
-    log('RTCPeerConnection erstellt');
-    
-    localStream.getTracks().forEach(t => { pc.addTrack(t, localStream); log('Track hinzugefügt: ' + t.kind); });
-    
-    pc.onicecandidate = e => {
-      if (e.candidate) {
-        const typ = e.candidate.candidate.includes('typ relay') ? '🟢 RELAY' : 
-                    e.candidate.candidate.includes('typ srflx') ? '🟡 SRFLX' : '🔵 HOST';
-        log('ICE Kandidat: ' + typ + ' ' + e.candidate.candidate.slice(0,60));
-        send({type:'RELAY', data:{type:'ICE', candidate:e.candidate}});
-      } else {
-        log('ICE Gathering abgeschlossen', 'ok');
-      }
-    };
-    
-    pc.oniceconnectionstatechange = () => log('ICE State: ' + pc.iceConnectionState, pc.iceConnectionState === 'connected' ? 'ok' : 'info');
-    pc.onconnectionstatechange = () => log('Connection State: ' + pc.connectionState);
-    pc.onsignalingstatechange = () => log('Signaling State: ' + pc.signalingState);
-    
-    pc.ontrack = e => {
-      log('🎉 AUDIO TRACK EMPFANGEN!', 'ok');
-      const audio = new Audio();
-      audio.srcObject = e.streams[0];
-      audio.play();
-    };
-    
+    log('✅ Mikrofon OK', 'ok');
+    setupPC();
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
     const offer = await pc.createOffer({offerToReceiveAudio:true});
     await pc.setLocalDescription(offer);
-    log('Offer erstellt und gesetzt');
-    send({type:'RELAY', data:{type:'CALL_OFFER', sdp:offer}});
-    
+    log('Offer erstellt');
+    wsRelay({type:'CALL_OFFER', sdp:offer});
   } catch(e) { log('FEHLER: ' + e.message, 'err'); }
 }
 
 async function acceptCall() {
-  if (!window._incomingOffer) { log('Kein eingehender Anruf!', 'err'); return; }
+  if (!incomingOffer) { log('Kein eingehender Anruf!', 'err'); return; }
   log('--- ANRUF ANNEHMEN ---', 'ok');
   try {
     localStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    log('Mikrofon: OK ✅', 'ok');
-    
-    pc = new RTCPeerConnection(ICE);
-    log('RTCPeerConnection erstellt');
-    
-    localStream.getTracks().forEach(t => { pc.addTrack(t, localStream); log('Track hinzugefügt: ' + t.kind); });
-    
-    pc.onicecandidate = e => {
-      if (e.candidate) {
-        const typ = e.candidate.candidate.includes('typ relay') ? '🟢 RELAY' : 
-                    e.candidate.candidate.includes('typ srflx') ? '🟡 SRFLX' : '🔵 HOST';
-        log('ICE Kandidat: ' + typ + ' ' + e.candidate.candidate.slice(0,60));
-        send({type:'RELAY', data:{type:'ICE', candidate:e.candidate}});
-      } else {
-        log('ICE Gathering abgeschlossen', 'ok');
-      }
-    };
-    
-    pc.oniceconnectionstatechange = () => log('ICE State: ' + pc.iceConnectionState, pc.iceConnectionState === 'connected' ? 'ok' : 'info');
-    pc.onconnectionstatechange = () => log('Connection State: ' + pc.connectionState);
-    pc.onsignalingstatechange = () => log('Signaling State: ' + pc.signalingState);
-    
-    pc.ontrack = e => {
-      log('🎉 AUDIO TRACK EMPFANGEN!', 'ok');
-      const audio = new Audio();
-      audio.srcObject = e.streams[0];
-      audio.play();
-    };
-    
-    await pc.setRemoteDescription(new RTCSessionDescription(window._incomingOffer.sdp));
+    log('✅ Mikrofon OK', 'ok');
+    setupPC();
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    await pc.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
     log('Remote Description gesetzt');
-    pendingIce.forEach(c => { pc.addIceCandidate(c); log('Gepufferter ICE angewendet'); });
+    for (const c of pendingIce) { await pc.addIceCandidate(c); log('Gepufferter ICE angewendet'); }
     pendingIce = [];
-    
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
-    log('Answer erstellt und gesetzt');
-    send({type:'RELAY', data:{type:'CALL_ANSWER', sdp:answer}});
-    
+    log('Answer erstellt');
+    wsRelay({type:'CALL_ANSWER', sdp:answer});
   } catch(e) { log('FEHLER: ' + e.message, 'err'); }
 }
 
 async function handleRelay(data) {
   if (data.type === 'CALL_OFFER') {
     log('📞 Eingehender Anruf!', 'ok');
-    window._incomingOffer = data;
-    log('→ Klicke "Annehmen" um anzunehmen');
+    incomingOffer = data;
+    log('→ "Annehmen" klicken!');
   }
   if (data.type === 'CALL_ANSWER' && pc) {
     await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-    log('Answer empfangen und gesetzt ✅', 'ok');
-    pendingIce.forEach(c => { pc.addIceCandidate(c); log('Gepufferter ICE angewendet'); });
+    log('✅ Answer empfangen', 'ok');
+    for (const c of pendingIce) { await pc.addIceCandidate(c); log('Gepufferter ICE angewendet'); }
     pendingIce = [];
   }
   if (data.type === 'ICE') {
     const c = new RTCIceCandidate(data.candidate);
     if (pc && pc.remoteDescription) {
       await pc.addIceCandidate(c);
-      log('ICE Kandidat hinzugefügt ✅');
+      log('ICE hinzugefügt ✅');
     } else {
       pendingIce.push(c);
-      log('ICE Kandidat gepuffert (warte auf Remote Description)');
+      log('ICE gepuffert (' + pendingIce.length + ')');
     }
   }
 }
