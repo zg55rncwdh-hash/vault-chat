@@ -776,18 +776,11 @@ async function toggleRecording() {
 
 // ── CALLS ─────────────────────────────────────────────────────
 let RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
-
-async function loadIceServers() {
-  try {
-    const resp = await fetch('https://vaul12.metered.live/api/v1/turn/credentials?apiKey=940f57ee6941e7021db2acee3e2a6f873519');
-    const iceServers = await resp.json();
-    RTC = {iceServers};
-    console.log('ICE Servers geladen:', iceServers.length);
-  } catch(e) {
-    console.warn('ICE Server Fallback:', e);
-  }
-}
-loadIceServers();
+// Load ICE servers from our own server (no CORS issues)
+fetch('https://vault-chat.onrender.com/ice')
+  .then(r => r.json())
+  .then(servers => { RTC = {iceServers: servers}; console.log('ICE loaded:', servers.length); })
+  .catch(() => console.log('ICE fallback'));
 
 async function startCall(video) {
   if (!sharedKey) { toast('Nicht verbunden','err'); return; }
