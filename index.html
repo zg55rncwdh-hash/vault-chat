@@ -106,12 +106,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);height:100dv
 .send-btn:active{opacity:.8;transform:scale(.9)}
 .record-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
 .record-btn.recording{background:var(--red);border-color:var(--red);color:#fff;animation:pulse 1s infinite}
-#callScreen{align-items:center;justify-content:space-between;padding:3rem 2rem;padding-top:calc(3rem + env(safe-area-inset-top));padding-bottom:calc(3rem + env(safe-area-inset-bottom));background:radial-gradient(ellipse at 50% 30%,#1a0a3a 0%,#050510 100%);position:relative}
+#callScreen{align-items:center;justify-content:space-between;padding:3rem 2rem;padding-top:calc(3rem + env(safe-area-inset-top));padding-bottom:calc(3rem + env(safe-area-inset-bottom));background:radial-gradient(ellipse at 50% 30%,#1a0a3a 0%,#050510 100%);position:relative;overflow:hidden}
 .call-peer-name{font-size:1.8rem;letter-spacing:.1em;color:var(--text);text-align:center}
 .call-status{font-size:.8rem;color:var(--muted);text-align:center;letter-spacing:.15em;margin-top:.5rem}
 .call-timer{font-size:1.2rem;color:var(--accent);text-align:center;letter-spacing:.2em;font-weight:bold}
-.call-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:3rem;color:#fff;margin:0 auto;box-shadow:0 0 60px rgba(0,229,255,.3);animation:callPulse 2s infinite}
-.call-controls{display:flex;gap:1.5rem;justify-content:center;align-items:center}
+.call-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:3rem;color:#fff;margin:0 auto;box-shadow:0 0 60px rgba(0,229,255,.3);animation:callPulse 2s infinite;position:relative;z-index:10}
+.call-controls{display:flex;gap:1.5rem;justify-content:center;align-items:center;position:relative;z-index:10}
 .call-ctrl-btn{width:60px;height:60px;border-radius:50%;border:none;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
 .call-ctrl-btn:active{transform:scale(.9)}
 .call-ctrl-btn.mute{background:var(--surface2);color:var(--text)}
@@ -484,15 +484,15 @@ async function handleRelay(data) {
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
     const myPub = await exportPub(myKeyPair);
     relay({type:'KEY_ACK', pub: myPub});
-    await showFingerprint();
     onConnected();
+    await showFingerprint();
   }
 
   if (data.type === 'KEY_ACK') {
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
-    await showFingerprint();
     onConnected();
+    await showFingerprint();
   }
 
   // WebRTC signals work WITHOUT sharedKey check
