@@ -235,6 +235,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);height:100dv
     <div class="chat-peer-info">
       <div class="chat-peer-name" id="chatPeerName">—</div>
       <div class="chat-peer-status" id="chatPeerStatus">🔒 VERSCHLÜSSELT</div>
+      <div id="fingerprintDisplay" style="display:none;font-size:.55rem;color:#888;cursor:pointer;padding:.1rem .3rem;margin-top:.1rem" onclick="alert('Vergleiche diesen Code per Telefonat!\nGleicher Code = sicher ✅\nAnderer Code = Angriff ❌\n\n'+this.textContent)"></div>
     </div>
     <div class="chat-actions">
       <button class="call-btn" onclick="startCall(false)">📞</button>
@@ -266,16 +267,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);height:100dv
 </div>
 
 <div id="callScreen" class="screen">
-  <video id="remoteVideo" autoplay playsinline></video>
-  <video id="localVideo" autoplay playsinline muted></video>
-  <div style="text-align:center;position:relative;z-index:2">
+  <video id="remoteVideo" autoplay playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0"></video>
+  <video id="localVideo" autoplay playsinline muted style="position:absolute;top:1rem;right:1rem;width:120px;height:160px;object-fit:cover;z-index:2;border-radius:.5rem;border:2px solid rgba(255,255,255,.3)"></video>
+  <div style="text-align:center;position:relative;z-index:3">
     <div class="call-peer-name" id="callPeerName">—</div>
     <div class="call-status" id="callStatus">VERBINDE...</div>
   </div>
   <div class="call-avatar" id="callAvatar">👤</div>
   <div class="call-timer" id="callTimer" style="display:none">00:00</div>
   <button id="audioStartBtn" style="display:none;background:#00e676;color:#000;border:none;padding:.8rem 2rem;border-radius:20px;font-family:monospace;font-size:.9rem;cursor:pointer;margin:.5rem auto" onclick="startAudioManual()">▶ AUDIO STARTEN</button>
-  <div class="call-controls">
+  <div class="call-controls" style="position:relative;z-index:3">
     <button class="call-ctrl-btn mute" id="muteBtn" onclick="toggleMute()">🎤</button>
     <button class="call-ctrl-btn hangup" onclick="hangup()">📵</button>
     <button class="call-ctrl-btn" onclick="toggleSpeaker()">🔊</button>
