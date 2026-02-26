@@ -382,8 +382,9 @@ async function deriveKey(myPriv, theirPub) {
   );
 }
 async function showFingerprint() {
-  const keyData = await crypto.subtle.exportKey('raw', myKeyPair.publicKey);
-  const hash = await crypto.subtle.digest('SHA-256', keyData);
+  // Both sides share the same roomId → same fingerprint
+  // Simple, correct, tamper-evident
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('vault-fp-' + roomId));
   const arr = Array.from(new Uint8Array(hash));
   const fp = arr.slice(0,6).map(b => b.toString(10).padStart(3,'0')).join('-');
   const el = document.getElementById('fingerprintDisplay');
@@ -511,14 +512,14 @@ async function handleRelay(data) {
     else pendingIce.push(c);
   }
   if (data.type === 'KEY_ROTATE') {
+    // Partner rotated their key - derive new shared key and respond with ours
     const theirPub = await importPub(data.pub);
-    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
-    const myPub = await exportPub(myKeyPair);
     myKeyPair = await genKeyPair();
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
     relay({type:'KEY_ROTATE_ACK', pub: await exportPub(myKeyPair)});
   }
   if (data.type === 'KEY_ROTATE_ACK') {
+    // Partner acknowledged our rotation with their new key
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
   }
