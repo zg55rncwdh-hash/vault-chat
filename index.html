@@ -368,6 +368,8 @@ let localStream = null;
 let pendingIce = [];
 let pendingLocalIce = [];
 let incomingOffer = null;
+let msgCount = 0;
+const PFS_INTERVAL = 50;
 
 // ── CRYPTO ────────────────────────────────────────────────────
 async function genKeyPair() {
@@ -379,6 +381,15 @@ async function deriveKey(myPriv, theirPub) {
     {name:'AES-GCM',length:256}, false, ['encrypt','decrypt']
   );
 }
+async function showFingerprint() {
+  const keyData = await crypto.subtle.exportKey('raw', myKeyPair.publicKey);
+  const hash = await crypto.subtle.digest('SHA-256', keyData);
+  const arr = Array.from(new Uint8Array(hash));
+  const fp = arr.slice(0,6).map(b => b.toString(10).padStart(3,'0')).join('-');
+  const el = document.getElementById('fingerprintDisplay');
+  if (el) { el.textContent = '🔑 ' + fp; el.style.display = 'block'; }
+}
+
 async function exportPub(kp) {
   const raw = await crypto.subtle.exportKey('raw', kp.publicKey);
   return btoa(String.fromCharCode(...new Uint8Array(raw)));
@@ -401,7 +412,7 @@ async function dec(b64, asBytes) {
   return asBytes ? new Uint8Array(plain) : new TextDecoder().decode(plain);
 }
 async function hashPw(p) {
-  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p+'vault2024'));
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p+'vault_chat_v2_secure_2026'));
   return btoa(String.fromCharCode(...new Uint8Array(h)));
 }
 
@@ -467,19 +478,18 @@ async function handleMsg(msg) {
 
 async function handleRelay(data) {
   if (data.type === 'KEY') {
-    // Host sent us their key — derive shared key and send ours back
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
-    // Send our key back to host
     const myPub = await exportPub(myKeyPair);
     relay({type:'KEY_ACK', pub: myPub});
+    await showFingerprint();
     onConnected();
   }
 
   if (data.type === 'KEY_ACK') {
-    // Guest sent their key — derive shared key
     const theirPub = await importPub(data.pub);
     sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+    await showFingerprint();
     onConnected();
   }
 
@@ -500,6 +510,18 @@ async function handleRelay(data) {
     if (peerConn && peerConn.remoteDescription) await peerConn.addIceCandidate(c);
     else pendingIce.push(c);
   }
+  if (data.type === 'KEY_ROTATE') {
+    const theirPub = await importPub(data.pub);
+    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+    const myPub = await exportPub(myKeyPair);
+    myKeyPair = await genKeyPair();
+    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+    relay({type:'KEY_ROTATE_ACK', pub: await exportPub(myKeyPair)});
+  }
+  if (data.type === 'KEY_ROTATE_ACK') {
+    const theirPub = await importPub(data.pub);
+    sharedKey = await deriveKey(myKeyPair.privateKey, theirPub);
+  }
   if (data.type === 'CALL_END') endCall();
 
   if (!sharedKey) return;
@@ -510,8 +532,12 @@ async function handleRelay(data) {
     if (destroySeconds > 0) scheduleDestroy(el);
   }
   if (data.type === 'FILE') {
-    const bytes = await dec(data.ct, true);
-    receiveFile(bytes, data.name, data.mime);
+    try {
+      const raw = Uint8Array.from(atob(data.ct), c => c.charCodeAt(0));
+      const plain = await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(0,12)}, sharedKey, raw.slice(12));
+      const bytes = new Uint8Array(plain);
+      receiveFile(bytes, data.name, data.mime);
+    } catch(e) { toast('Datei-Empfang Fehler: '+e.message,'err'); console.error(e); }
   }
   if (data.type === 'VOICE') {
     const bytes = await dec(data.ct, true);
@@ -679,6 +705,12 @@ window.addEventListener('load', () => {
 });
 
 // ── CHAT ──────────────────────────────────────────────────────
+async function rotateKey() {
+  myKeyPair = await genKeyPair();
+  const pub = await exportPub(myKeyPair);
+  relay({type:'KEY_ROTATE', pub});
+}
+
 async function sendMessage() {
   if (pendingFile) { await sendFile(); return; }
   const inp = document.getElementById('msgInput');
@@ -732,13 +764,20 @@ async function sendFile() {
   cancelFile();
   toast('Sende...');
   try {
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const ct = await enc(bytes);
-    relay({type:'FILE', ct, name:file.name, mime:file.type});
+    const arrayBuf = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuf);
+    // Encrypt as base64
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, sharedKey, bytes);
+    const ctBytes = new Uint8Array(ct);
+    const out = new Uint8Array(12 + ctBytes.byteLength);
+    out.set(iv); out.set(ctBytes, 12);
+    const ctB64 = btoa(String.fromCharCode(...out));
+    relay({type:'FILE', ct:ctB64, name:file.name, mime:file.type, size:file.size});
     if (file.type.startsWith('image/')||file.type.startsWith('video/')) addMediaMsg('me',bytes,file.name,file.type);
     else addFileMsg('me',bytes,file.name,file.type);
     toast('Gesendet ✓','ok');
-  } catch(e) { toast('Fehler','err'); }
+  } catch(e) { toast('Fehler: '+e.message,'err'); console.error(e); }
 }
 function receiveFile(bytes, name, mime) {
   if (mime&&(mime.startsWith('image/')||mime.startsWith('video/'))) addMediaMsg('them',bytes,name,mime);
