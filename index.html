@@ -775,12 +775,13 @@ async function toggleRecording() {
 }
 
 // ── CALLS ─────────────────────────────────────────────────────
-let RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
-// Load ICE servers from our own server (no CORS issues)
-fetch('https://vault-chat.onrender.com/ice')
-  .then(r => r.json())
-  .then(servers => { RTC = {iceServers: servers}; console.log('ICE loaded:', servers.length); })
-  .catch(() => console.log('ICE fallback'));
+const RTC = {iceServers:[
+  {urls:'stun:stun.relay.metered.ca:80'},
+  {urls:'turn:global.relay.metered.ca:80',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+  {urls:'turn:global.relay.metered.ca:80?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+  {urls:'turn:global.relay.metered.ca:443',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+  {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'}
+]};
 
 async function startCall(video) {
   if (!sharedKey) { toast('Nicht verbunden','err'); return; }
@@ -789,7 +790,26 @@ async function startCall(video) {
     localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:video});
     peerConn = new RTCPeerConnection(RTC);
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
+    peerConn.onicecandidate = e => {
+      if (e.candidate) {
+        relay({type:'ICE', candidate:e.candidate});
+        const t = e.candidate.candidate;
+        if (t.includes('typ relay')) {
+          document.getElementById('callStatus').textContent = '✅ TURN RELAY OK';
+          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 2000);
+        }
+        if (t.includes('typ srflx')) {
+          document.getElementById('callStatus').textContent = '📡 STUN OK';
+          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 1000);
+        }
+      } else {
+        // ICE gathering complete
+        const status = document.getElementById('callStatus').textContent;
+        if (!status.includes('VERBUNDEN') && !status.includes('ICE:')) {
+          document.getElementById('callStatus').textContent = '⚠️ KEINE RELAY KANDIDATEN';
+        }
+      }
+    };
     peerConn.ontrack = e => {
       document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
       const stream = e.streams[0];
@@ -837,7 +857,26 @@ async function acceptCall() {
     localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:isVideoCall});
     peerConn = new RTCPeerConnection(RTC);
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-    peerConn.onicecandidate = e => { if (e.candidate) relay({type:'ICE', candidate:e.candidate}); };
+    peerConn.onicecandidate = e => {
+      if (e.candidate) {
+        relay({type:'ICE', candidate:e.candidate});
+        const t = e.candidate.candidate;
+        if (t.includes('typ relay')) {
+          document.getElementById('callStatus').textContent = '✅ TURN RELAY OK';
+          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 2000);
+        }
+        if (t.includes('typ srflx')) {
+          document.getElementById('callStatus').textContent = '📡 STUN OK';
+          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 1000);
+        }
+      } else {
+        // ICE gathering complete
+        const status = document.getElementById('callStatus').textContent;
+        if (!status.includes('VERBUNDEN') && !status.includes('ICE:')) {
+          document.getElementById('callStatus').textContent = '⚠️ KEINE RELAY KANDIDATEN';
+        }
+      }
+    };
     peerConn.ontrack = e => {
       document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
       const stream = e.streams[0];
