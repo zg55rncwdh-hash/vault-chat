@@ -1,45 +1,8 @@
 const WebSocket = require(‘ws’);
 const http = require(‘http’);
 
-let iceServers = [
-{urls:‘stun:stun.relay.metered.ca:80’},
-{urls:‘turn:global.relay.metered.ca:80’,username:‘e0b167a936e336520543b014’,credential:‘5vmFnvfsAOm4rrsd’},
-{urls:‘turn:global.relay.metered.ca:80?transport=tcp’,username:‘e0b167a936e336520543b014’,credential:‘5vmFnvfsAOm4rrsd’},
-{urls:‘turn:global.relay.metered.ca:443’,username:‘e0b167a936e336520543b014’,credential:‘5vmFnvfsAOm4rrsd’},
-{urls:‘turns:global.relay.metered.ca:443?transport=tcp’,username:‘e0b167a936e336520543b014’,credential:‘5vmFnvfsAOm4rrsd’}
-];
-
-// Fetch fresh ICE servers from Metered API
-async function refreshIceServers() {
-try {
-const https = require(‘https’);
-const url = ‘https://vaul12.metered.live/api/v1/turn/credentials?apiKey=940f57ee6941e7021db2acee3e2a6f873519’;
-https.get(url, (res) => {
-let data = ‘’;
-res.on(‘data’, chunk => data += chunk);
-res.on(‘end’, () => {
-const servers = JSON.parse(data);
-if (Array.isArray(servers) && servers.length > 0) {
-iceServers = servers;
-console.log(‘ICE Servers refreshed:’, servers.length);
-}
-});
-});
-} catch(e) {
-console.log(‘ICE refresh failed, using defaults’);
-}
-}
-
-refreshIceServers();
-setInterval(refreshIceServers, 60 * 60 * 1000); // refresh every hour
-
 const server = http.createServer((req, res) => {
 res.setHeader(‘Access-Control-Allow-Origin’, ‘*’);
-if (req.url === ‘/ice’) {
-res.writeHead(200, {‘Content-Type’:‘application/json’});
-res.end(JSON.stringify(iceServers));
-return;
-}
 res.writeHead(200);
 res.end(‘VAULT CHAT OK’);
 });
