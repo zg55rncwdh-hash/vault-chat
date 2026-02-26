@@ -492,11 +492,12 @@ async function handleRelay(data) {
   }
   if (data.type === 'CALL_ANSWER' && peerConn) {
     await peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp));
-    pendingIce.forEach(c => peerConn.addIceCandidate(c));
-    pendingIce = [];
-    // Now send buffered local ICE candidates
+    // Send our buffered ICE candidates to remote FIRST
     pendingLocalIce.forEach(c => relay({type:'ICE', candidate:c}));
     pendingLocalIce = [];
+    // Then apply remote ICE candidates
+    for (const c of pendingIce) { await peerConn.addIceCandidate(c); }
+    pendingIce = [];
   }
   if (data.type === 'ICE') {
     const c = new RTCIceCandidate(data.candidate);
@@ -800,13 +801,7 @@ async function startCall(video) {
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
     peerConn.onicecandidate = e => {
       if (e.candidate) {
-        // Buffer until answer received
-        pendingLocalIce.push(e.candidate);
-        const t = e.candidate.candidate;
-        if (t.includes('typ relay')) {
-          document.getElementById('callStatus').textContent = '✅ TURN RELAY OK';
-          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 2000);
-        }
+        relay({type:'ICE', candidate:e.candidate});
       }
     };
     peerConn.ontrack = e => {
@@ -858,13 +853,7 @@ async function acceptCall() {
     localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
     peerConn.onicecandidate = e => {
       if (e.candidate) {
-        // Buffer until answer received
-        pendingLocalIce.push(e.candidate);
-        const t = e.candidate.candidate;
-        if (t.includes('typ relay')) {
-          document.getElementById('callStatus').textContent = '✅ TURN RELAY OK';
-          setTimeout(()=>{ document.getElementById('callStatus').textContent = '📞 VERBINDE...'; }, 2000);
-        }
+        relay({type:'ICE', candidate:e.candidate});
       }
     };
     peerConn.ontrack = e => {
