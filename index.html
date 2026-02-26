@@ -500,7 +500,7 @@ async function handleRelay(data) {
   }
   if (data.type === 'ICE') {
     const c = new RTCIceCandidate(data.candidate);
-    if (peerConn && peerConn.remoteDescription) peerConn.addIceCandidate(c);
+    if (peerConn && peerConn.remoteDescription) await peerConn.addIceCandidate(c);
     else pendingIce.push(c);
   }
   if (data.type === 'CALL_END') endCall();
@@ -899,7 +899,7 @@ async function acceptCall() {
       }
     };
     await peerConn.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
-    pendingIce.forEach(c => peerConn.addIceCandidate(c));
+    for (const c of pendingIce) { await peerConn.addIceCandidate(c); }
     pendingIce = [];
     const answer = await peerConn.createAnswer();
     await peerConn.setLocalDescription(answer);
