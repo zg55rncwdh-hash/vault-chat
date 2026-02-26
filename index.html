@@ -498,9 +498,9 @@ async function handleRelay(data) {
     pendingLocalIce.forEach(c => relay({type:'ICE', candidate:c}));
     pendingLocalIce = [];
   }
-  if (data.type === 'ICE' && peerConn) {
+  if (data.type === 'ICE') {
     const c = new RTCIceCandidate(data.candidate);
-    if (peerConn.remoteDescription) peerConn.addIceCandidate(c);
+    if (peerConn && peerConn.remoteDescription) peerConn.addIceCandidate(c);
     else pendingIce.push(c);
   }
   if (data.type === 'CALL_END') endCall();
@@ -787,7 +787,8 @@ const RTC = {
     {urls:'turn:global.relay.metered.ca:443',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
     {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'}
   ],
-  iceTransportPolicy: 'relay'
+  iceTransportPolicy: 'relay',
+  iceCandidatePoolSize: 10
 };
 
 async function startCall(video) {
