@@ -406,7 +406,12 @@ async function enc(data) {
   const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, sharedKey, bytes);
   const out = new Uint8Array(12 + ct.byteLength);
   out.set(iv); out.set(new Uint8Array(ct), 12);
-  return btoa(String.fromCharCode(...out));
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < out.length; i += chunkSize) {
+    binary += String.fromCharCode(...out.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 async function dec(b64, asBytes) {
   const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
@@ -450,8 +455,8 @@ async function handleMsg(msg) {
   }
 
   if (msg.type === 'JOINED') {
-    // Guest: server confirmed join — just wait for host to send KEY
-    console.log('Joined room, waiting for host key...');
+    // roomId already set from joinFromLink - confirmed by server
+    console.log('Joined room:', roomId);
   }
 
   if (msg.type === 'GUEST_JOINED') {
@@ -662,6 +667,7 @@ async function joinFromLink(url) {
   try {
     myKeyPair = await genKeyPair();
     role = 'guest';
+    roomId = rid;
     await connect();
     send({type:'JOIN', roomId: rid});
     // Wait for host to send us their KEY
@@ -774,7 +780,13 @@ async function sendFile() {
     const ctBytes = new Uint8Array(ct);
     const out = new Uint8Array(12 + ctBytes.byteLength);
     out.set(iv); out.set(ctBytes, 12);
-    const ctB64 = btoa(String.fromCharCode(...out));
+    // Chunk-based btoa to avoid stack overflow on large files
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < out.length; i += chunkSize) {
+      binary += String.fromCharCode(...out.subarray(i, i + chunkSize));
+    }
+    const ctB64 = btoa(binary);
     relay({type:'FILE', ct:ctB64, name:file.name, mime:file.type, size:file.size});
     if (file.type.startsWith('image/')||file.type.startsWith('video/')) addMediaMsg('me',bytes,file.name,file.type);
     else addFileMsg('me',bytes,file.name,file.type);
