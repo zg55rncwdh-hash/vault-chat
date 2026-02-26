@@ -892,60 +892,6 @@ async function acceptCall() {
   } catch(e) { toast('Fehler: ' + e.message,'err'); }
 }
 
- {
-  document.getElementById('incomingCall').classList.remove('show');
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:isVideoCall});
-    peerConn = new RTCPeerConnection(RTC);
-    localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-    peerConn.onicecandidate = e => {
-      if (e.candidate) {
-        relay({type:'ICE', candidate:e.candidate});
-      }
-    };
-    peerConn.ontrack = e => {
-      document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-      const stream = e.streams[0];
-      if (isVideoCall) {
-        const rv = document.getElementById('remoteVideo');
-        rv.srcObject = stream;
-        rv.style.display = 'block';
-        const lv = document.getElementById('localVideo');
-        lv.srcObject = localStream;
-        lv.style.display = 'block';
-      } else {
-        window._remoteAudio = document.createElement('audio');
-        window._remoteAudio.srcObject = stream;
-        window._remoteAudio.autoplay = true;
-        document.body.appendChild(window._remoteAudio);
-        window._remoteAudio.play().catch(() => {
-          document.getElementById('callStatus').textContent = '👆 AUDIO STARTEN';
-          document.getElementById('audioStartBtn').style.display = 'block';
-        });
-      }
-    };
-    peerConn.oniceconnectionstatechange = () => {
-      const s = peerConn.iceConnectionState;
-      document.getElementById('callStatus').textContent = 'ICE: ' + s;
-      if (s === 'connected' || s === 'completed') {
-        document.getElementById('callStatus').textContent = '🔒 VERBUNDEN · VERSCHLÜSSELT';
-      }
-      if (s === 'failed') {
-        toast('Verbindung fehlgeschlagen', 'err');
-      }
-    };
-    await peerConn.setRemoteDescription(new RTCSessionDescription(incomingOffer.sdp));
-    for (const c of pendingIce) { await peerConn.addIceCandidate(c); }
-    pendingIce = [];
-    const answer = await peerConn.createAnswer();
-    await peerConn.setLocalDescription(answer);
-    relay({type:'CALL_ANSWER', sdp:answer});
-    document.getElementById('callPeerName').textContent = document.getElementById('chatPeerName').textContent;
-    document.getElementById('callStatus').textContent = '📞 VERBINDE...';
-    showScreen('callScreen');
-    startCallTimer();
-  } catch(e) { toast('Fehler: ' + e.message,'err'); }
-}
 
 function declineCall() {
   document.getElementById('incomingCall').classList.remove('show');
