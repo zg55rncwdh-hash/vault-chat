@@ -775,13 +775,16 @@ async function toggleRecording() {
 }
 
 // ── CALLS ─────────────────────────────────────────────────────
-const RTC = {iceServers:[
-  {urls:'stun:stun.relay.metered.ca:80'},
-  {urls:'turn:global.relay.metered.ca:80',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turn:global.relay.metered.ca:80?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turn:global.relay.metered.ca:443',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
-  {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'}
-]};
+const RTC = {
+  iceServers:[
+    {urls:'stun:stun.relay.metered.ca:80'},
+    {urls:'turn:global.relay.metered.ca:80',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+    {urls:'turn:global.relay.metered.ca:80?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+    {urls:'turn:global.relay.metered.ca:443',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'},
+    {urls:'turns:global.relay.metered.ca:443?transport=tcp',username:'e0b167a936e336520543b014',credential:'5vmFnvfsAOm4rrsd'}
+  ],
+  iceTransportPolicy: 'relay'
+};
 
 async function startCall(video) {
   if (!sharedKey) { toast('Nicht verbunden','err'); return; }
